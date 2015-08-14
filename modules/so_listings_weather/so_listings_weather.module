@@ -1,0 +1,594 @@
+<?php
+
+//so_listings_weather
+
+function so_listings_weather_permission() {
+
+    return array(
+        'configure so_listings_weather' => array(
+            'title' => t("Configure module"),
+            'description' => t("Edit module's settings."),
+        ),
+    );
+}
+
+function so_listings_weather_menu() {
+
+    $items = array();
+
+    $items['admin/config/so_listings/settings/weather'] = array(
+        'title' => "Weather filter",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_weather_settings_form'),
+        'access arguments' => array('configure so_listings_weather'),
+        'weight' => 5,
+    );
+
+    return $items;
+}
+
+function so_listings_weather_field_extra_fields() {
+
+    $settings = variable_get('so_listings_weather_settings', array());
+    $nodes_types = $settings['nodes_types'];
+
+    $extra_fields = array();
+
+    foreach($nodes_types as $node_type) {
+
+        $extra_fields['node'][$node_type] = array(
+            'form' => array(
+                'sol_weather' => array(
+                    'label' => t("Weather field"),
+                    'description' => t("SO Listing Weather Element"),
+                    'weight' => 0,
+                ),
+              ),
+        );
+    }
+
+    return $extra_fields;
+}
+
+function so_listings_weather_help($path, $arg) {
+
+    if($path != 'admin/help#so_listings_weather') {return;}
+
+    $output = "<h2>" . t("Nomenclature used") . "</h2>";
+
+    module_load_include('inc', 'so_listings_weather', 'so_listings_weather.yahoo');
+
+    $weathers_list = so_listings_weather_get_list();
+    $settings = variable_get('so_listings_weather_settings', array());
+    $weather_types = so_listings_weather_get_weather_types();
+
+    $nomenclature = array_fill_keys(array_keys($weather_types), array());
+
+    foreach($settings['weather_mappings'] as $weather_code => $infos) {
+
+        $nomenclature[$infos['mapping']][] = $weathers_list[$weather_code]['title'];
+    }
+
+    array_walk($nomenclature, function(&$val) {
+        $val = array_unique($val);
+        sort($val);
+    });
+
+    foreach($nomenclature as $weather_type => $wheathers) {
+
+        $output .= "<h3>" . $weather_types[$weather_type] . "</h3>";
+
+        if(!empty($wheathers)) {
+            $output .= "<p>" . implode(", ", $wheathers) . "</p>";
+        } else {
+            $output .= "<p>- " . t("No mapping") . " -</p>";
+        }
+    }
+
+    return $output;
+}
+
+function so_listings_weather_so_listings_filter() {
+
+    return array(
+        'so_listings_weather' => array(
+            'label' => t("Weather filter"),
+            'callback' => 'so_listings_weather_filter_callback',
+            'cache' => false,
+            'form' => 'so_listings_weather_filter_form',
+            'settings' => array(
+                'weather_type' => array(),
+                'undefined_behavior' => false,
+            ),
+        ),
+    );
+}
+
+function so_listings_weather_filter_form($default_values) {
+
+    $options = array('current' => t("Realtime weather")) + so_listings_weather_get_weather_types();
+
+    return array(
+        'weather_type' => array(
+            '#type' => 'checkboxes',
+            '#after_build' => array('solw_checkboxes_filter_alter'),
+            '#title' => t("Display only nodes which match"),
+            '#options' => $options,
+            '#default_value' => $default_values['weather_type'],
+        ),
+
+        'undefined_behavior' => array(
+            '#prefix' => "<p>",
+            '#suffix' => "</p>",
+            '#type' => 'checkbox',
+            '#title' => t("Display also nodes which not have weather settings"),
+            '#default_value' => $default_values['undefined_behavior'],
+        ),
+    );
+}
+
+function so_listings_weather_filter_callback(&$query, $lid, &$data) {
+
+    $weather_types = array_filter($data['weather_type']);
+
+    if(empty($weather_types)) {return;}
+
+    $weather_type_fragment = so_listings_prepare_query_fragment_data('weather_type@so_listings_weather');
+    $query['join'][] = $weather_type_fragment->joins[0];
+
+    if($data['undefined_behavior'] == true) {
+        $undefined_clause = " OR " . $weather_type_fragment->fields[0] . " IS NULL";
+    } else {
+        $undefined_clause = "";
+    }
+
+    $where = array();
+
+    if(array_key_exists('current', $weather_types)) {
+
+        $settings = variable_get('so_listings_weather_settings', array());
+        $weather_data = variable_get('so_listings_weather_current_weather', array());
+
+        $city_fragment = so_listings_prepare_query_fragment_data('city@so_listings_weather');
+
+        foreach($weather_data as $city_code => $weather_code) {
+
+            $where[] = "(" . $city_fragment->fields[0] . "=? AND " . $weather_type_fragment->fields[0] . "=?)";
+            $query['args'][] = $city_code;
+            $query['args'][] = $settings['weather_mappings'][$weather_code]['mapping'];
+        }
+
+    } else {
+
+        foreach($weather_types as $weather_type) {
+            $where[] = $weather_type_fragment->fields[0] . "=?";
+            $query['args'][] = $weather_type;
+        }
+    }
+
+    $query['where'][] = "(" . implode(" OR ", $where) . $undefined_clause . ")";
+}
+
+function solw_checkboxes_filter_alter($element, &$form_state) {
+
+    foreach(element_children($element) as $checkbox) {
+
+        if($checkbox == 'current') {continue;}
+
+        $element[$checkbox]['#states'] = array(
+            'invisible' => array(
+                ':input[name="' . $element['current']['#name'] . '"]' => array('checked' => true),
+            ),
+        );
+    }
+
+    return $element;
+}
+
+function so_listings_weather_cron() {
+
+    $settings = variable_get('so_listings_weather_settings', array());
+
+    $results = db_query("SELECT DISTINCT city FROM {so_listings_weather}");
+
+    $weather_data = array();
+
+    while($row = $results->fetchObject()) {
+
+        $data = so_listings_weather_get_data($row->city);
+
+        if(empty($data)) {continue;}
+
+        $weather_data[$row->city] = $data;
+    }
+
+    variable_set('so_listings_weather_current_weather', $weather_data);
+}
+
+function so_listings_weather_get_data($city_code) {
+
+    $url = "http://weather.yahooapis.com/forecastrss?w=" . $city_code . "&u=c";
+    $xml = simplexml_load_file($url, null, LIBXML_NOCDATA);
+    $ns = $xml->getNamespaces(true);
+    $xml->registerXPathNamespace('c', $ns['yweather']);
+
+    if (!isset($xml->channel->link)) {
+        watchdog('SOL Weather', "Unable to get data for city code : @code", array('@code' => $city_code), WATCHDOG_WARNING);
+        return;
+    }
+
+    $condition = $xml->xpath('//c:condition');
+
+    return (int)$condition[0]->attributes()->code;
+}
+
+function so_listings_weather_form_node_form_alter(&$form, &$form_state, $form_id) {
+
+    $settings = variable_get('so_listings_weather_settings');
+
+    if(!array_key_exists($form['#node']->type, $settings['nodes_types'])) {return;}
+
+    $results = db_query("SELECT * FROM {so_listings_weather} WHERE nid=?", array($form['#node']->nid));
+
+    $default_city = "";
+    $default_weathers = array();
+
+    while($row = $results->fetchObject()) {
+
+        $default_city = $row->city;
+        $default_weathers[] = $row->weather_type;
+    }
+
+    $form['#submit'][] = 'so_listings_weather_form_node_submit';
+
+    $form['solw_weather'] = array(
+        '#type' => 'fieldset',
+        '#title' => t("Weather"),
+        '#collapsible' => true,
+        '#collapsed' => true,
+
+        'solw_help' => array(
+            '#type' => 'markup',
+            '#markup' => t("How to set ?") . "<br />" .
+                         t("For exemple, for outdoor water activities, only 'good weather' should be checked.") . "<br />" .
+                         t("But a museum can be visited regardless of the weather. In this case all three weathers should be checked.") . "<br />" .
+                         t("But, on another side, you could decide to provide a museum as filtering result only if weather is bad (as an alternative).") . " " .
+                         t("It only depends on your own filtering policy."),
+        ),
+
+        'solw_city' => array(
+            '#type' => 'select',
+            '#title' => t("Reference city"),
+            '#options' => $settings['general']['city_codes'],
+            '#default_value' => !empty($default_city) ? $default_city : null,
+        ),
+
+        'solw_weather' => array(
+            '#type' => 'checkboxes',
+            '#title' => t("Suitable weather for this node"),
+            '#description' => "<p>" . t(
+                "You can find detailed weather states nomenclature !link",
+                array('!link' => l(t("here"), 'admin/help/so_listings_weather', array('attributes' => array('target' => '_blank'))))
+            ) . "</p>",
+            '#options' => so_listings_weather_get_weather_types(),
+            '#default_value' => !empty($default_weathers) ? $default_weathers : array_keys(so_listings_weather_get_weather_types()),
+        ),
+
+        'solw_translations_msg' => array(),
+    );
+
+    if($form['#node']->language == language_default('language')) {
+
+        $form['solw_weather']['solw_translations_msg'] = array(
+            '#type' => 'markup',
+            '#prefix' => "<strong>",
+            '#suffix' => "</strong>",
+            '#markup' => t("Since this node is in default language, all its weather settings will be automatically duplicated in all its translations."),
+        );
+    }
+}
+
+function so_listings_weather_form_node_submit($form, &$form_state) {
+
+    $weathers = array_filter($form_state['values']['solw_weather']);
+
+    $nids = array($form_state['node']->nid);
+
+    $results = db_query("SELECT nid FROM {node} WHERE tnid=:nid AND nid!=:nid", array(':nid' => $nids[0]));
+
+    while($row = $results->fetchObject()) {
+        $nids[] = $row->nid;
+    }
+
+    db_query("DELETE FROM {so_listings_weather} WHERE nid IN (:nids)", array(':nids' => $nids));
+
+    foreach($nids as $nid) {
+
+        foreach($weathers as $weather) {
+            db_query("INSERT INTO {so_listings_weather} SET nid=?, weather_type=?, city=?", array(
+                $nid,
+                $weather,
+                $form_state['values']['solw_city'],
+            ));
+        }
+    }
+}
+
+function so_listings_weather_settings_form($form, &$form_state) {
+
+    $settings = variable_get('so_listings_weather_settings');
+
+    $form = array(
+        '#tree' => true,
+
+        'settings' => array(
+
+            'general' => array(
+                '#type' => 'fieldset',
+                '#title' => t("Configuration"),
+
+                'city_codes' => array(
+                    '#type' => 'container',
+                    '#theme' => 'solw_city_codes_overview',
+                ),
+
+                'add_city_code' => array(
+                    '#type' => 'container',
+                    '#parents' => array('add_city_code'),
+                    '#theme' => 'solw_add_city_code',
+
+                    'city_code' => array(
+                        '#type' => 'textfield',
+                        '#title' => t("Reference city code"),
+                        '#size' => 20,
+                    ),
+
+                    'city_label' => array(
+                        '#type' => 'textfield',
+                        '#title' => t("Reference city label"),
+                        '#size' => 40,
+                    ),
+
+                    'add_city' => array(
+                        '#type' => 'submit',
+                        '#value' => t("Add"),
+                    ),
+                ),
+            ),
+
+            'nodes_types' => array(
+                '#type' => 'fieldset',
+                '#title' => t("Nodes types"),
+                '#collapsible' => true,
+                '#collapsed' => true,
+
+                'node_types' => array(
+                    '#parents' => array('settings', 'nodes_types'),
+                    '#type' => 'checkboxes',
+                    '#title' => t("Nodes types to filter"),
+                    '#options' => node_type_get_names(),
+                    '#default_value' => !empty($settings['nodes_types']) ? $settings['nodes_types'] : array(),
+                ),
+            ),
+
+            'weather_mappings' => array(
+                '#type' => 'fieldset',
+                '#title' => t("Weather mappings"),
+                '#collapsible' => true,
+                '#collapsed' => true,
+
+                'weather_mappings' => array(
+                    '#parents' => array('settings', 'weather_mappings'),
+                    '#type' => 'container',
+                    '#theme' => 'solw_weather_mappings',
+                ),
+            ),
+        ),
+
+        'save' => array(
+            '#type' => 'submit',
+            '#value' => t("Save"),
+        ),
+    );
+
+    module_load_include('inc', 'so_listings_weather', 'so_listings_weather.yahoo');
+    $weathers = so_listings_weather_get_list();
+
+    $weather_mapping_options = so_listings_weather_get_weather_types();
+
+    foreach($weathers as $code => $infos) {
+
+        $form['settings']['weather_mappings']['weather_mappings'][] = array(
+            'weather' => array(
+                '#type' => 'markup',
+                '#markup' => $infos['title'] . " (" . $code . ")",
+            ),
+            'mapping' => array(
+                '#type' => 'select',
+                '#options' => $weather_mapping_options,
+                '#default_value' => !empty($settings['weather_mappings']) ?
+                                    $settings['weather_mappings'][$code] :
+                                    $infos['default'],
+            ),
+        );
+    }
+
+    if(!empty($settings['general'])) {
+
+        $weather_data = variable_get('so_listings_weather_current_weather', array());
+
+        $weight = 0;
+
+        foreach($settings['general']['city_codes'] as $city_code => $label) {
+
+            $form['settings']['general']['city_codes'][$city_code] = array(
+                '#type' => 'container',
+
+                'city_label' => array(
+                    '#parents' => array('settings', 'general', 'city_codes', $city_code),
+                    '#type' => 'textfield',
+                    '#value' => $label,
+                ),
+
+                'weight' => array(
+                    '#parents' => array('city_weights', $city_code),
+                    '#type' => 'weight',
+                    '#default_value' => $weight++,
+                ),
+
+                'current_weather' => array(
+                    '#type' => 'markup',
+                    '#markup' => array_key_exists($city_code, $weather_data) ? $weathers[$weather_data[$city_code]]['title'] : "- " . t("Unknown") . " -",
+                ),
+
+                'delete_city' => array(
+                    '#parents' => array('delete_city', $city_code),
+                    '#name' => 'delete_city_' . $city_code,
+                    '#type' => 'submit',
+                    '#value' => t("Delete"),
+                ),
+            );
+        }
+    }
+
+    return $form;
+}
+
+function so_listings_weather_get_weather_types() {
+
+    return array(
+        '1' => t("Good weather"),
+        '2' => t("Middle weather"),
+        '3' => t("Bad weather"),
+    );
+}
+
+function so_listings_weather_settings_form_submit($form, &$form_state) {
+
+    $settings = variable_get('so_listings_weather_settings');
+    $launch_cron = false;
+
+    if(end($form_state['triggering_element']['#parents']) == 'add_city') {
+
+        $settings['general']['city_codes'][$form_state['values']['add_city_code']['city_code']] = $form_state['values']['add_city_code']['city_label'];
+
+    } elseif($form_state['triggering_element']['#parents'][0] == 'delete_city') {
+
+        unset($settings['general']['city_codes'][$form_state['triggering_element']['#parents'][1]]);
+
+    } else {
+
+        $cities = array_flip($form_state['values']['city_weights']);
+        ksort($cities);
+        $cities = array_flip($cities);
+
+        $unordered_cities = $form_state['values']['settings']['general']['city_codes'];
+
+        array_walk($cities, function(&$val, $idx) use ($unordered_cities) {
+            $val = $unordered_cities[$idx];
+        });
+
+        $form_state['values']['settings']['general']['city_codes'] = $cities;
+
+        $settings = array_merge($settings, $form_state['values']['settings']);
+        $settings['nodes_types'] = array_filter($settings['nodes_types']);
+    }
+
+    variable_set('so_listings_weather_settings', $settings);
+}
+
+function so_listings_weather_theme() {
+
+    return array(
+        'solw_weather_mappings' => array(
+            'render element' => 'element',
+        ),
+        'solw_add_city_code' => array(
+            'render element' => 'element',
+        ),
+        'solw_city_codes_overview' => array(
+            'render element' => 'element',
+        ),
+    );
+}
+
+function theme_solw_city_codes_overview($vars) {
+
+    $elements = $vars['element'];
+
+    $rows = array();
+
+    $city_codes = element_children($elements);
+
+    if(empty($city_codes)) {
+        return "<div>- " . t("No city set") . " -</div>";
+    }
+
+    foreach($city_codes as $city_code) {
+
+        $city_code_markup = array('#markup' => $city_code);
+        $city_label_markup = array('#markup' => $elements[$city_code]['city_label']['#value']);
+
+        $elements[$city_code]['weight']['#attributes']['class'] = array('draggable_weight');
+
+        $rows[] = array(
+            'data' => array(
+                render($city_code_markup),
+                render($city_label_markup),
+                render($elements[$city_code]['weight']),
+                render($elements[$city_code]['current_weather']),
+                render($elements[$city_code]['delete_city']),
+            ),
+            'class' => array('draggable'),
+        );
+    }
+
+    drupal_add_tabledrag('city_codes_overview', 'order', 'sibling', 'draggable_weight');
+
+    return theme('table', array(
+        'header' => array(
+            t("City code"),
+            t("City"),
+            t("Weight"),
+            t("Current weather"),
+            "",
+        ),
+        'rows' => $rows,
+        'attributes' => array('id' => 'city_codes_overview'),
+    ));
+}
+
+function theme_solw_add_city_code($vars) {
+
+    $element = $vars['element'];
+
+    return theme('table', array(
+        'header' => array(),
+        'rows' => array(
+            array(
+                render($element['city_code']),
+                render($element['city_label']),
+                render($element['add_city']),
+            ),
+        ),
+    ));
+}
+
+function theme_solw_weather_mappings($vars) {
+
+    $element = $vars['element'];
+    $rows = array();
+
+    foreach(element_children($element) as $row) {
+        $rows[] = array(
+            render($element[$row]['weather']),
+            render($element[$row]['mapping']),
+        );
+    }
+
+    return theme('table', array(
+        'header' => array(),
+        'rows' => $rows,
+    ));
+}

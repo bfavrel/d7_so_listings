@@ -1,0 +1,2373 @@
+<?php
+
+/*
+ * Implementation of hook_boot()
+ */
+function so_listings_boot() {
+    require_once 'so_listings.field.inc';
+    require_once 'so_listings.filters.inc';
+    require_once 'so_listings.search.inc';
+    require_once 'so_listings.sorting.inc';
+}
+
+/*
+ * Implementation of hook_init()
+ */
+function so_listings_init() {
+    error_reporting(error_reporting() & ~E_NOTICE); // "undefined index" messages.
+}
+
+/**
+ * Implements hook_permission().
+ */
+function so_listings_permission() {
+    return array(
+        'configure so_listings' => array(
+            'title' => t("Configure module"),
+            'description' => t("Edit module's settings."),
+        ),
+        'administer so_listings' => array(
+            'title' => t("Administer listings"),
+            'description' => t("Create and configure listings."),
+        ),
+        'administer so_listings advanced' => array(
+            'title' => t("Administer listings' advanced features"),
+            'description' => t("Edit advanced features like sorting custom clauses, etc."),
+        ),
+    );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function so_listings_menu() {
+    $items = array();
+
+    // ----- MODULE'S SETTINGS -----
+
+    $items['admin/config/so_listings'] = array(
+        'title' => "Listings",
+        'type' => MENU_NORMAL_ITEM,
+        'access arguments' => array('configure so_listings'),
+        'page callback' => 'system_admin_menu_block_page',
+        'file' => 'system.admin.inc',
+        'file path' => drupal_get_path('module', 'system'),
+        'position' => 'right',
+        'weight' => -30,
+    );
+
+    $items['admin/config/so_listings/settings'] = array(
+        'title' => "Configuration",
+        'description' => "General settings and presets",
+        'type' => MENU_NORMAL_ITEM,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_settings_form'),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('configure so_listings'),
+    );
+
+    $items['admin/config/so_listings/settings/general'] = array(
+        'title' => "Configuration",
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'access arguments' => array('configure so_listings'),
+        'weight' => 0,
+    );
+
+    //--- view modes
+
+    $items['admin/config/so_listings/settings/view_modes'] = array(
+        'title' => "View modes",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_view_modes_form'),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('configure so_listings'),
+        'weight' => 1,
+    );
+
+    //--- presets
+
+    $items['admin/config/so_listings/settings/presets'] = array(
+        'title' => "Listings presets",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_presets_overview_form'),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('configure so_listings'),
+        'weight' => 2,
+    );
+
+    $items['admin/config/so_listings/setting/preset/edit/%'] = array(
+        'title' => "Edit preset",
+        'type' => MENU_CALLBACK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_edit_preset_form', 6),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('configure so_listings'),
+    );
+
+    $items['admin/config/so_listings/setting/preset/delete/%'] = array(
+        'title' => "Edit listing",
+        'type' => MENU_CALLBACK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_delete_preset_confirm', 6),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('configure so_listings'),
+    );
+
+    //--- contexts
+
+    $items['admin/config/so_listings/settings/contexts'] = array(
+        'title' => "Contexts",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_contexts_settings'),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('configure so_listings'),
+        'weight' => 3,
+    );
+
+    //--- sorting
+
+    $items['admin/config/so_listings/settings/sorting'] = array(
+        'title' => "Sorting",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'so_listings_sorting_settings',
+        'file' => 'so_listings.sorting.inc',
+        'access arguments' => array('configure so_listings'),
+        'weight' => 4,
+    );
+
+    // ----- OVERVIEW -----
+
+    $items['admin/structure/so_listings'] = array(
+        'title' => "Listings",
+        'description' => "Create and configure listings.",
+        'type' => MENU_NORMAL_ITEM,
+        'page callback' => 'so_listings_overview',
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('administer so_listings'),
+    );
+
+    $items['admin/structure/so_listings/list'] = array(
+        'title' => "Listings",
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'access arguments' => array('administer so_listings'),
+    );
+
+    $items['admin/structure/so_listings/create'] = array(
+        'title' => "Create a new listing",
+        'type' => MENU_LOCAL_ACTION,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_create_form'),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('administer so_listings'),
+    );
+
+    $items['admin/structure/so_listings/delete/%'] = array(
+        'title' => "Edit listing",
+        'type' => MENU_CALLBACK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_delete_confirm', 4),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('administer so_listings'),
+    );
+
+    // ----- EDITION -----
+
+    //--- params
+    $items['admin/structure/so_listings/edit/%'] = array(
+        'title' => "Edit listing",
+        'type' => MENU_CALLBACK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_edit_form', 4),
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('administer so_listings'),
+    );
+
+    $items['admin/structure/so_listings/edit/%/params'] = array(
+        'title' => "Parameters",
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'access arguments' => array('administer so_listings'),
+        'weight' => 1,
+    );
+
+    //--- filters
+    $items['admin/structure/so_listings/edit/%/filters'] = array(
+        'title' => "Filters",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_filters_form', 4),
+        'file' => 'so_listings.filters.inc',
+        'access arguments' => array('administer so_listings'),
+        'weight' => 2,
+    );
+
+    //--- search engines
+    // les tabs des displays sont générées dynamiquement dans so_listings_menu_local_tasks_alter();
+    $items['admin/structure/so_listings/edit/%/search_engine'] = array(
+        'title' => "Search form",
+    	'page callback' => 'so_listings_search_form_interface',
+        'page arguments' => array(4),
+        'access arguments' => array('administer so_listings'),
+        'file' => 'so_listings.search.inc',
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 3,
+    );
+
+    //--- sorting
+    $items['admin/structure/so_listings/edit/%/sorting'] = array(
+        'title' => "Sorting",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'so_listings_sorting_edit',
+        'page arguments' => array(4),
+        'file' => 'so_listings.sorting.inc',
+        'access arguments' => array('administer so_listings'),
+        'weight' => 4,
+    );
+    $items['admin/structure/so_listings/edit/%/sorting/edit_clause/%/%'] = array( // clause_id / target_lid
+        'title' => "Create a clause",
+        'type' => MENU_CALLBACK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_sorting_edit_clause_form', 4, 7, 8),
+        'file' => 'so_listings.sorting.inc',
+        'access arguments' => array('administer so_listings advanced'),
+    );
+    $items['admin/structure/so_listings/edit/%/sorting/delete_clause/%'] = array( // clause_id
+        'title' => "",
+        'type' => MENU_CALLBACK,
+        'page callback' => 'so_listings_sorting_delete_clause',
+        'page arguments' => array(4, 7),
+        'file' => 'so_listings.sorting.inc',
+        'access arguments' => array('administer so_listings advanced'),
+    );
+    $items['admin/structure/so_listings/sorting/ajax/field_helper/%/%'] = array( // lid / field name
+        'type' => MENU_CALLBACK,
+        'page callback' => 'so_listings_sorting_ajax_field',
+        'page arguments' => array(6, 7),
+        'file' => 'so_listings.sorting.inc',
+        'access arguments' => array('administer so_listings advanced'),
+    );
+
+    //--- back
+    $items['admin/structure/so_listings/edit/%/back'] = array(
+        'title' => "Listings",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_goto',
+        'page arguments' => array('admin/structure/so_listings'),
+        'access arguments' => array('administer so_listings'),
+        'weight' => 0,
+    );
+
+    //--- sql debug mode
+    $items['so_listings/sql_debug_mode/%'] = array(
+        'type' => MENU_CALLBACK,
+        'page callback' => 'so_listings_sql_debug_mode',
+        'page arguments' => array(2),
+        'access arguments' => array('configure so_listings'),
+    );
+
+    // ----- AJAX -----
+    $items['so_listings/ajax/node/%'] = array(  // $nid[/$listing_index = 0]
+        'type' => MENU_CALLBACK,
+        'page callback' => 'so_listings_ajax_listing_node',
+        'page arguments' => array(2, 3),
+        'access arguments' => array('access content'),
+    );
+    $items['so_listings/ajax/block/%'] = $items['so_listings/ajax/node/%']; // $nid[/$listing_index = 0]
+
+    $items['so_listings/ajax/embeded/%/%'] = array( // $nid/$lid[/$listing_index = 0][/$preset = 'default'][/$theme = 'so_listing']
+        'type' => MENU_CALLBACK,
+        'page callback' => 'so_listings_ajax_listing_embeded',
+        'page arguments' => array(4),
+        'access arguments' => array('access content'),
+    );
+
+    return $items;
+}
+
+/*
+ * Implementation of hook_menu_local_tasks_alter()
+ * Adding search form displays' tabs
+ */
+function so_listings_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+
+    if($root_path != 'admin/structure/so_listings/edit/%/search_engine') {return;}
+
+    $displays = so_forms_displays('so_listings', $router_item['page_arguments'][0] . '@search');
+    $displays = array_merge(array('default' => null), $displays); // on s'assure que 'default' soit la première task
+
+    foreach($displays as $display => $display_label)  {
+
+        $path = 'admin/structure/so_listings/edit/' . $router_item['page_arguments'][0] . '/search_engine/' . $display;
+
+        $item = menu_get_item($path);
+
+        $item['path'] = $path;
+        $item['title'] = t($display_label); // il est trop-tard pour que le title_callback du #link ('t()') soit appliqué.
+        $item['href'] = $path;
+
+        /* // TODO : ça ne fonctionna pas. Trouver un moyen de passer le path de la task parent
+        if($display != 'default') {
+            $item['options']['query'] = array('destination' => $root_path);
+        }*/
+
+        if($item['access'] == true) {
+
+            $data['tabs'][1]['output'][] = array(
+                '#theme' => 'menu_local_task',
+                '#link' => $item,
+            );
+
+            $data['tabs'][1]['count']++;
+        }
+    }
+
+    $current_display = array_key_exists(1, $router_item['page_arguments']) ? $router_item['page_arguments'][1] : 'default';
+
+    array_walk($data['tabs'][1]['output'], function(&$var) use($current_display) {
+        if($var['#link']['page_arguments'][1] == $current_display) {
+            $var['#active'] = true;
+        } else {
+            $var['#active'] = false;
+        }
+    });
+}
+
+function so_listings_ajax_listing_node($type, $nid, $listing_index = 0) {
+
+    $node = node_load($nid);
+    $view = node_view($node, 'full');
+
+    $target = $type == 'block' ? 'field_listing_block' : 'field_listing_node';
+
+    foreach(element_children($view[$target]) as $key) {
+        if($key != $listing_index) {unset($view[$target][$key]);}
+    }
+
+    $render = $view[$target];
+
+    print(render($render));
+
+    return null;
+}
+
+function so_listings_ajax_listing_embeded($lid, $listing_index = 0, $preset = 'default', $theme = 'so_listing') {
+
+    $options = array(
+        'listing_index' => $listing_index,
+    );
+
+    $listing = so_listing($lid, $preset, $theme, $options);
+
+    print(render($listing));
+
+    return null;
+}
+
+/**
+ * Provides a fully builded render array for a given listing, matching preset's parameters.
+ *
+ * @param int $lid
+ * @param string $preset
+ * @param string $theme : theme hook to apply to the listing's whole render array.
+ * @param array &$options : used to complete preset's options (especially with modules' own parameters). Preset's options can also be overrided,
+ *                          but it's recommended to do not, since it would make maintenance harder. If it needed to override, consider to create a new preset instead.
+ *                          When function returns, contains all parameters set during process lifetime.
+ */
+function so_listing($lid, $preset = 'default', $theme = 'so_listing', &$options = array()) {
+
+    $listing = so_listings_listing($lid, $preset, $options);
+
+    return array(so_listings_build($listing, $theme));
+}
+
+/**
+ * Builds a listing's render array from the listing's data array structure.
+ * By default, the render array's theme is 'so_listing', which match the template 'sol_listing.tpl.php'.
+ *
+ * @param array $listing
+ * @param string $theme : theme hook to apply to the listing's whole render array.
+ *
+ * @return array : listing's render array
+ */
+function so_listings_build($listing, $theme = 'so_listing') {
+
+    $listing_theme = $listing['infos']['options']['so_listings']['listing_display_type'] == 'default' ?
+                            'listing' :
+                            'listing__' . $listing['infos']['options']['so_listings']['listing_display_type'];
+
+    $nodes = (array)$listing['nodes'];
+
+    $view_modes_settings = so_listings_get_view_modes_settings();
+
+    $so_listings_node_modules = module_implements('so_listings_node');
+    $so_listings_node_loaded_modules = module_implements('so_listings_node_loaded');
+    $so_listings_build_modules = module_implements('so_listings_build');
+
+    foreach($nodes as $nid => $infos) {
+
+        $node = node_load($nid);
+        $node_vm_config = null;
+
+        if(empty($listing['infos']['options']['so_listings']['nodes_view_mode'])) {
+
+            if($view_modes_settings['default_view_modes'][$node->type] != 'disabled') {
+                $node_vm_config = db_query("SELECT config FROM {so_listings_view_modes} WHERE nid=?", array($node->nid))->fetchColumn();
+
+                if(empty($node_vm_config)) {
+                    $node_vm_config = 'default';
+                }
+
+            } else {
+                $node_vm_config = 'default';
+            }
+
+            $view_mode = !empty($node_vm_config) ? $view_modes_settings['configs'][$node_vm_config]['vm_listing'][$listing['infos']['preset']] : 'teaser';
+
+        } else {
+            $view_mode = $listing['infos']['options']['so_listings']['nodes_view_mode'];
+        }
+
+        foreach($so_listings_node_loaded_modules as $module) {
+            $data = $listing['infos']['options'][$module];
+            $data['preset'] = $listing['infos']['preset'];
+
+            $function = $module . '_so_listings_node_loaded';
+            $function($node, $infos, $data, $view_mode);
+        }
+
+        $nodes[$nid] = node_view($node, $view_mode);
+
+        if($listing['infos']['options']['so_listings']['tie_with_standalone'] == true) {
+            $url = drupal_get_destination();
+            $url = drupal_parse_url($url['destination']);
+
+            $query_parameters = array();
+
+            foreach($url['query'] as $param => $value) {
+                $query_parameters[] = $param . '=' . $value;
+            }
+
+            if(arg(1) == 'ajax') {
+                $path = drupal_get_path_alias('node/' . arg(3));
+            } else {
+                $path = drupal_get_path_alias($url['path']);
+            }
+
+            $nodes[$nid]['#node']->listing_back_params = '?back=' . $path . (!empty($query_parameters) ? urlencode('?' . implode('&', $query_parameters)) : '');
+            $nodes[$nid]['#node']->listing_back_params_array = array('back' => drupal_get_path_alias($url['path']) . (!empty($query_parameters) ? urlencode('?' . implode('&', $query_parameters)) : ''));
+        }
+
+        foreach($so_listings_node_modules as $module) {
+            $function = $module . '_so_listings_node';
+            $function($nodes[$nid], $infos, $listing['infos']['options'][$module]);
+        }
+    }
+
+    $search_form = $listing['infos']['options']['so_listings']['search_form'] == true ? so_form('so_listings', $listing['infos']['lid'] . '@search') : array();
+
+    if($listing['infos']['options']['so_listings']['listing'] == true) {
+        $listing_element = array(
+            '#type' => 'container',
+            '#theme' => $listing_theme,
+            '#attributes' => array(), // obligatoire : bug D7 connu
+
+            'nodes' => $nodes,
+        );
+        $listing_infos = array(
+            '#type' => 'value',
+            '#value' => $listing['infos'],
+        );
+    } else {
+        $listing_infos = array();
+        $listing_element = array();
+    }
+
+    $build = array(
+        '#type' => 'container',
+        '#theme' => $theme,
+        '#attributes' => array(), // obligatoire : bug D7 connu
+
+        'title' => array(
+            '#markup' => $listing['infos']['title'],
+        ),
+
+        'listing_infos' => $listing_infos,
+
+        'compiler_options' => array(
+            '#type' => 'value',
+            '#value' => $listing['infos']['options'],
+        ),
+
+        'search_form' => $search_form,
+
+        'count' => array(
+            '#type' => 'value',
+            '#value' => $listing['infos']['count'],
+        ),
+
+        'listing' => $listing_element,
+
+        'pager' => $listing['infos']['options']['so_listings']['pager'] == true ? array(
+            '#markup' => theme('pager', array('element' => $listing['infos']['listing_index'])),
+        ) : array(),
+    );
+
+    if($listing['infos']['options']['so_listings']['ajax'] == true) {
+        drupal_add_js(drupal_get_path('module', 'so_listings') . '/js/so_listings_ajax.js', array('type' => 'file', 'scope' => 'header'));
+    }
+
+    foreach($so_listings_build_modules as $module) {
+        $function = $module . '_so_listings_build';
+        $function($build, (array)$listing['nodes'], $listing['infos']['options'][$module]);
+    }
+
+    return $build;
+}
+
+function so_listings_preprocess_node(&$vars) {
+
+    $view_modes_configs = &drupal_static(__FUNCTION__);
+
+    if (!isset($view_modes_configs)) {
+        $view_modes_configs = so_listings_get_view_modes_settings();
+    }
+
+    if($vars['page'] == false) {
+
+        if($view_modes_configs['default_view_modes'][$vars['type']] != 'disabled') {
+            $node_vm_config = db_query("SELECT config FROM {so_listings_view_modes} WHERE nid=?", array($vars['nid']))->fetchColumn();
+        } else {
+            $node_vm_config = 'default';
+        }
+
+        if(!empty($node_vm_config) && $view_modes_configs['configs'][$node_vm_config]['vm_fiche'] == '404') {
+            $vars['node_url'] = null;
+        }
+
+        if(array_key_exists('listing_back_params', $vars) && !empty($vars['node_url'])) {
+            $vars['node_url'] .= $vars['listing_back_params'];
+        }
+    }
+
+    // correctif du preprocess originel @see node.module:template_preprocess_node() :
+    // --> $variables['page'] = $variables['view_mode'] == 'full' && node_is_page($node);
+    // so_listings utilise des VM custom en mode page
+    $vars['page'] = $vars['node']->page;
+}
+
+/*
+ * Implementation of hook_entity_view_mode_alter()
+ */
+function so_listings_entity_view_mode_alter(&$view_mode, $context) {
+
+    $view_modes_configs = &drupal_static(__FUNCTION__);
+
+    if (!isset($view_modes_configs)) {
+        $view_modes_configs = so_listings_get_view_modes_settings();
+    }
+
+    if($context['entity_type'] != 'node' || $view_mode != 'full') {return;}
+
+    if($view_modes_configs['default_view_modes'][$context['entity']->type] != 'disabled') {
+        $node_vm_config = db_query("SELECT config FROM {so_listings_view_modes} WHERE nid=?", array($context['entity']->nid))->fetchColumn();
+    } else {
+        $node_vm_config = 'default';
+    }
+
+    if(!empty($node_vm_config)) {
+
+        $context['entity']->page = true; // pour les VM custom, cette entrée n'est pas paramétrée
+
+        if($view_modes_configs['configs'][$node_vm_config]['vm_fiche'] != '404') {
+
+            $view_mode = $view_modes_configs['configs'][$node_vm_config]['vm_fiche'];
+
+        } elseif(!user_access('administer nodes')) {
+
+            drupal_not_found();
+            exit();
+        }
+    }
+}
+
+function so_listings_process_page(&$vars) {
+
+    if(array_key_exists('back', $_GET)) {
+
+        global $theme;
+
+        $back_url = drupal_parse_url(urldecode($_GET['back']));
+        $back_path = drupal_lookup_path('source', $back_url['path']);
+
+        $breadcrumb = array();
+        _so_listings_build_breadcrumb($back_path, $back_url['query'], $breadcrumb);
+
+        $theme_name = $theme . '_breadcrumb_home';
+        $show_breadcrumb_home = theme_get_setting($theme_name);
+        if ($show_breadcrumb_home) {
+        	array_unshift($breadcrumb, "<a href='" . url('<front>') . "'>" . t("Home") . "</a>");
+        }
+
+        $vars['breadcrumb'] = theme('breadcrumb', array('breadcrumb' => $breadcrumb));
+
+    } else {
+
+        $nid = db_query("SELECT flp.entity_id FROM {so_listings_map} AS slm
+                         LEFT JOIN {field_data_field_listing_node} AS fln ON fln.field_listing_node_lid=slm.lid
+                         LEFT JOIN {field_data_field_listing_parent} AS flp ON flp.entity_id=fln.entity_id
+                         WHERE slm.nid=?
+                         AND flp.field_listing_parent_value=1",
+                array($vars['node']->nid))->fetchColumn();
+
+        if($nid != null) {
+            $breadcrumb = array();
+            _so_listings_build_breadcrumb('node/' . $nid, null, $breadcrumb);
+
+            $vars['breadcrumb'] = theme('breadcrumb', array('breadcrumb' => $breadcrumb));
+        }
+    }
+}
+
+function _so_listings_build_breadcrumb($path, $args = array(), &$breadcrumb, $plid = null) {
+
+    if($plid === null) {
+        $link = db_query("SELECT link_path, link_title, plid FROM {menu_links} WHERE link_path=?", array($path))->fetchObject();
+    } else {
+        $link = db_query("SELECT link_path, link_title, plid FROM {menu_links} WHERE mlid=?", array($plid))->fetchObject();
+    }
+
+    if(!empty($link)) {
+        array_unshift($breadcrumb, "<a href='" . url($link->link_path, array('query' => $args)) . "'>" . t($link->link_title) . "</a>");
+    } else {
+        array_unshift($breadcrumb, "<a href='" . url('<front>') . "'>" . t("Home") . "</a>");
+    }
+
+    if($link->plid != 0) {
+        _so_listings_build_breadcrumb(null, array(), $breadcrumb, $link->plid);
+    } else {
+        return;
+    }
+}
+
+/*
+ * Implementation of hook_forms($form_id, $args)
+ */
+function so_listings_forms($form_id, $args) {
+    $forms = array();
+
+    if(strpos($form_id, 'so_listings_preset_switcher_form') === 0) {
+        $forms[$form_id]['callback'] = 'so_listings_preset_switcher_form';
+    }
+
+    return $forms;
+}
+
+function so_listings_preset_switcher_form($form, &$form_state, $switcher_idx, $presets, $default_value) {
+
+    if(count($presets) < 2) {return array();}
+
+    $available_presets = array_merge($presets, so_listings_get_presets());
+    $available_presets = array_intersect_key($available_presets, $presets);
+
+    $presets_options = array();
+
+    foreach($available_presets as $preset) {
+        $presets_options[$preset->id] = "<span>" . t($preset->label) . "</span>";
+    }
+
+    $form = array(
+        '#attributes' => array(
+            'class' => array('preset_switcher_form'),
+        ),
+
+        'preset' => array(
+            '#type' => 'radios',
+            '#options' => $presets_options,
+            '#default_value' => $default_value,
+        ),
+
+        'switcher_index' => array(
+            '#type' => 'value',
+            '#value' => $switcher_idx,
+        ),
+
+        'switch' => array(
+            '#type' => 'submit',
+            '#value' => t("Change mode"),
+        ),
+    );
+
+    return $form;
+}
+
+function so_listings_preset_switcher_form_submit($form, &$form_state) {
+
+    $settings = variable_get('sol_settings', array());
+    $q = $_GET['q'];
+
+    if($settings['global_switcher'] == true) {
+        $_SESSION['listings_global_switcher'] = $form_state['values']['preset'];
+    } else {
+        $_SESSION['listings_local_switcher'][$q][$form_state['values']['switcher_index']] = $form_state['values']['preset'];
+    }
+}
+
+/**
+ * Helper : provide an array of well formated human readable language list.
+ *
+ * @return array : indexed by language code.
+ */
+function so_listings_language_list() {
+    $language_list = array();
+
+    foreach (language_list() as $language => $infos) {
+        $language_list[$language] = t($infos->name) . ($language == language_default('language') ? " (" . t("default") . ")" : "");
+    }
+
+    return $language_list;
+}
+
+/**
+ * Provides listings' definitions stored in database.
+ * If $id is not provided, whole definitions will be returned.
+ *
+ * @param int $id
+ *
+ * @return mixed : array of stdClass indexed by 'id', or single stdClass if $id is provided
+ */
+function so_listings_get_listings_definitions($id = null) {
+
+    // TODO : étudier la possibilité d'une mise en cache statique
+
+    if (!empty($id)) {
+        $where = "id=?";
+        $args = array($id);
+    } else {
+        $where = "1";
+        $args = array();
+    }
+
+    $req = "SELECT * FROM {so_listings} WHERE " . $where . " ORDER BY name ASC";
+    $result = db_query($req, $args);
+
+    $listings = array();
+
+    while ($row = $result->fetchObject()) {
+        $row->params = unserialize($row->params);
+        $row->filters = unserialize($row->filters);
+        $row->sorting = unserialize($row->sorting);
+        $row->cache = unserialize($row->cache);
+
+        $listings[$row->id] = $row;
+    }
+
+    if (!empty($id)) {
+        $listings = $listings[$id];
+    }
+
+    return $listings;
+}
+
+/**
+ * List of compilation contexts
+ *
+ * @param boolean $filtered : if set to 'true', only active contexts will be returned.
+ *
+ * @return array
+ */
+function so_listings_get_contexts($filtered = true) {
+
+    $contexts = variable_get('sol_contexts_settings', array());
+
+    if($filtered == true) {
+        $contexts = array_filter($contexts, function($val){return $val['active'];});
+    }
+
+    return $contexts;
+}
+
+/**
+ * Save a new or edited listing definition.
+ *
+ * @param array or stdClass &$listing_definition : whole or partial listing definition which will be possibly merged with an existing one.
+ *                                         In case of new listing, $definition will contains the newly created id.
+ *
+ * @return boolean : if data sources have changed or not
+ */
+function so_listings_save_listing_definition(&$listing_definition) {
+
+    $listing_has_changed = false;
+    $definition = (array)$listing_definition;
+
+    if(!empty($definition['model'])) {
+        $existing = (array)so_listings_get_listings_definitions($definition['model']);
+        unset($existing['id']);
+        unset($definition['params']);
+        $definition = array_merge((array)$existing, (array)$definition);
+    } else {
+        $existing = (array)so_listings_get_listings_definitions($definition['id']);
+
+        if(!empty($existing)) {
+            if(array_key_exists('params', $definition)) {
+                $sources_have_changed = $definition['params']['sources'] != $existing['params']['sources'];
+                $listing_has_changed = $listing_has_changed || $sources_have_changed;
+            }
+
+            if(array_key_exists('cache', $definition)) {
+                $listing_has_changed = $listing_has_changed || ($definition['cache']['filters']['filters'] != $existing['cache']['filters']['filters']);
+            }
+        }
+
+        $definition = array_merge((array)$existing, (array)$definition);
+    }
+
+    $record = array(
+        'id' => $definition['id'],
+        'name' => $definition['name'],
+        'title' => $definition['title'],
+        'description' => $definition['description'],
+        'language' => $definition['language'],
+        'params' => serialize((array)$definition['params']),
+        'filters' => serialize((array)$definition['filters']),
+        'sorting' => serialize((array)$definition['sorting']),
+        'cache' => serialize((array)$definition['cache']),
+    );
+
+    $default = array(
+        'name' => null,
+        'title' => null,
+        'description' => null,
+        'language' => null,
+        'params' => serialize(array()),
+        'filters' => serialize(array()),
+        'sorting' => serialize(array()),
+        'cache' => serialize(array()),
+    );
+
+    $record += $default;
+
+    drupal_write_record('so_listings', $record, (!empty($record['id']) ? 'id' : array()));
+
+    if($listing_has_changed) {
+        module_invoke_all('so_listings_changed', (object)$definition);
+    }
+
+    $listing_definition = $record;
+
+    return $sources_have_changed;
+}
+
+/**
+ * Returns the fields list of a listing.
+ *
+ * @param int $lid
+ * @param string $shared_mark : fields shared by whole sources wille be prefixed with this string
+ * @param int &$num_sources : at return, contains the number of different sources
+ *
+ * @return array : field name => field label
+ */
+function so_listings_get_fields_list($lid, $shared_mark = "", &$num_sources = 0) {
+
+    $definition = so_listings_get_listings_definitions($lid);
+
+    $sources = $definition->params['sources'];
+    $sources_pool = so_listings_load_sources_pool(false);
+
+    $type_fragment = so_listings_prepare_query_fragment_data('type@node');
+
+    $fields_pool = array();
+    $common_fields = array();
+
+    foreach($sources as $source) {
+
+        $options = array(
+            'filters' => false,
+            'sorting' => false,
+        );
+
+        $query = so_listings_init_query();
+        $source_infos = explode(':', $source); // 0:module, 1:group, 2:id
+        $callback = $sources_pool[$source_infos[0]][$source_infos[1]]['callback'];
+        $args = $sources_pool[$source_infos[0]][$source_infos[1]]['sources'][$source_infos[2]]['args'];
+        $callback($query, $args, array());
+
+        $query['fields'] = $type_fragment->fields;
+        $query['group_by'] = $type_fragment->fields;
+
+        $results = so_listings_compile($lid, $options, $query);
+
+        foreach($results['nodes'] as $node) {
+
+            $fields_instances = field_info_instances('node', $node['type']);
+
+            foreach($fields_instances as $instance) {
+
+                if(!array_key_exists($instance['field_name'], $fields_pool)) {
+                    $fields_pool[$instance['field_name']] = $instance['label'] . " (" . $instance['field_name'] . ")";
+                }
+
+                $common_fields[$instance['field_name']]++;
+            }
+        }
+    }
+
+    asort($fields_pool);
+
+    if($shared_mark != "") {
+        $num_sources = count($sources);
+
+        if($num_sources > 1) {
+            foreach($common_fields as $common_field => $occurrence) {
+                if($occurrence == $num_sources) {
+                    $fields_pool[$common_field] = $shared_mark . $fields_pool[$common_field];
+                }
+            }
+        }
+    }
+
+    return $fields_pool;
+}
+
+function so_listings_get_view_modes_default_settings() {
+
+    // on ne traite que les sources de données de so_listing, qui ne retourne qu'un unique groupe
+    // dont les sources sont indexées par nom machine du node type :
+    $datasource = so_listings_so_listings();
+    $allowed_nodes_types = $datasource[0]['sources'];
+
+    $default_view_modes = array();
+
+    foreach($allowed_nodes_types as $node_type => $infos) {
+        $default_view_modes[$node_type] = 'disabled';
+    }
+
+    $presets_settings = so_listings_get_presets();
+    $vm_listing = array();
+
+    foreach($presets_settings as $id => $preset_settings) {
+        if($preset_settings->params['so_listings']['nodes_view_mode'] != "") {continue;} // "" = "- Use mode defined in each node -" option
+
+        $vm_listing[$id] = 'teaser';
+    }
+
+    return array(
+        'configs' => array(
+            'default' => array(
+                'config_label' => t("Default"),
+                'id' => 'default',
+                'vm_listing' => $vm_listing,
+                'vm_fiche' => 'full',
+                'picto_path' => drupal_get_path('module', 'so_listings') . '/images/view_modes/0_default.png',
+                'weight' => 0,
+            ),
+        ),
+        'default_view_modes' => $default_view_modes,
+    );
+}
+
+/**
+ * Returns informations about view modes configs and default view modes set, or provides default ones.
+ *
+ * @param $param : string : what to return : either 'configs' or 'default_view_modes'
+ *
+ * @return array :
+ *          - 'configs' : array : indexed by config name :
+ *                  - 'config_label' : string
+ *                  - 'vm_listing' : string
+ *                  - 'vm_fiche' : string
+ *                  - 'picto_path' : string
+ *                  - 'weight' : int
+ *
+ *          - 'default_view_modes' : array : indexed by nodes types. Contains the listing VM.
+ */
+function so_listings_get_view_modes_settings($param = null) {
+
+    $settings = variable_get('so_listings_view_modes', array());
+
+    if(empty($settings) || (array_key_exists('configs', $settings) && empty($settings['configs']))) {
+        $settings = so_listings_get_view_modes_default_settings();
+    }
+
+    if(!empty($param)) {
+        return $settings[$param];
+    } else {
+        return $settings;
+    }
+}
+
+function so_listings_view_modes_node_admin_content_form($form, &$form_state) {
+
+    $settings = so_listings_get_view_modes_settings();
+
+    $vm_options = array();
+
+    foreach($settings['configs'] as $view_mode => $config) {
+        $vm_options[$view_mode] = theme('image', array('path' => $config['picto_path'])) . "<span>" . $config['config_label'] . "</span>";
+    }
+
+    $form = array(
+        '#tree' => true,
+        '#attached' => array(
+            'css' => array(drupal_get_path('module', 'so_listings') . '/css/so_listings_admin.css'),
+            'js' => array(drupal_get_path('module', 'so_listings') . '/js/so_listings_admin.js'),
+        ),
+
+        'params' => array(
+            '#type' => 'container',
+            '#id' => 'sol_vm_ajax_wrapper',
+
+
+            'nid' => array(
+                '#type' => 'hidden',
+                '#attributes' => array(
+                    'id' => 'sol_vm_nid',
+                ),
+            ),
+
+            'config' => array(
+                '#type' => 'radios',
+                '#title' => t("Display mode"),
+                '#options' => $vm_options,
+                '#ajax' => array(
+                    'callback' => 'so_listings_view_modes_node_admin_content_ajax_callback',
+                    'wrapper' => 'sol_vm_ajax_wrapper',
+                    'effect' => 'fade',
+                    'event' => 'change',
+                    'method' => 'replace',
+                    'progress' => array(
+                        'type' => 'throbber',
+                        'message' => null,
+                    ),
+                ),
+            ),
+
+            'locked' => array(
+                '#type' => 'hidden',
+                '#value' => false,
+                '#attributes' => array(
+                    'id' => 'sol_vm_locked',
+                ),
+            ),
+        ),
+    );
+
+    return $form;
+}
+
+function so_listings_view_modes_node_admin_content_ajax_callback($form, &$form_state) {
+
+    db_query("REPLACE INTO {so_listings_view_modes} SET nid=?, config=?", array(
+        $form_state['values']['params']['nid'],
+        $form_state['values']['params']['config'],
+    ));
+
+    $output = render($form['params']);
+
+    $commands = array(
+        ajax_command_replace('#sol_vm_ajax_wrapper', $output),
+
+        array(
+            'command' => 'nodeAdminContentAjaxReturn',
+        ),
+    );
+
+    return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+function so_listings_preprocess_page(&$vars) {
+
+    if(!array_key_exists('#form_id', (array)$vars['page']['content']['system_main'])
+            || $vars['page']['content']['system_main']['#form_id'] != 'node_admin_content') {
+        return;
+    }
+
+    $vars['page']['content']['view_modes_node_admin_content_form'] = drupal_get_form('so_listings_view_modes_node_admin_content_form');
+}
+
+function so_listings_form_node_admin_content_alter(&$form, &$form_state) {
+
+    if($form_state['submitted'] == true) {return;}
+
+    $settings = so_listings_get_view_modes_settings();
+
+    if(count($settings['configs']) < 2) {return;}
+
+    $insert_after = 1; // index de la colonne précédent l'insertion
+
+    // on ne traite que les sources de données de so_listing, qui ne retourne qu'un unique groupe
+    // dont les sources sont indexées par nom machine du node type :
+    $datasource = so_listings_so_listings();
+    $allowed_nodes_types = $datasource[0]['sources'];
+
+    array_splice($form['admin']['nodes']['#header'], $insert_after, 0, array('data' => "Mode"));
+
+    foreach(element_children($form['admin']['nodes']['#options'], false) as $nid) {
+
+        $node_type = db_query("SELECT type FROM {node} WHERE nid=?", array($nid))->fetchColumn();
+        if(!array_key_exists($node_type, $allowed_nodes_types)) {continue;}
+
+        if($settings['default_view_modes'][$node_type] == 'disabled') {continue;}
+
+        $config = db_query("SELECT config FROM {so_listings_view_modes} WHERE nid=?", array($nid))->fetchColumn();
+
+        if(empty($config)) {$config = 'default';}
+
+        $hiddens = array(
+            'nid' => array(
+                '#type' => 'hidden',
+                '#value' => $nid,
+                '#attributes' => array(
+                    'class' => array('vm_nid'),
+                ),
+            ),
+            'vm' => array(
+                '#type' => 'hidden',
+                '#value' => $config,
+                '#attributes' => array(
+                    'class' => array('vm_vm'),
+                ),
+            ),
+        );
+
+        $additions = array(
+            'vm' => array(
+                'data' => theme('image', array(
+                    'path' => base_path() . $settings['configs'][$config]['picto_path'],
+                    'title' => $settings['configs'][$config]['config_label'],
+                    'attributes' => array(
+                        'class' => array('node_admin_content_vm_picto'),
+                    ),
+                )) . render($hiddens),
+            ),
+        );
+
+        array_splice($form['admin']['nodes']['#options'][$nid], $insert_after, 0, $additions);
+    }
+
+}
+
+/*
+ * Implementation of hook_node_operations()
+ */
+function so_listings_node_operations() {
+
+    $view_modes_configs = so_listings_get_view_modes_settings('configs');
+    if(count($view_modes_configs) < 2) {return;}
+
+    $operations = array();
+
+    foreach($view_modes_configs as $config => $infos) {
+        $operations[] = array(
+            'label' => t("Set view mode to '@vm'", array('@vm' => $infos['config_label'])),
+            'callback' => 'so_listings_update_nodes_view_modes',
+            'callback arguments' => array($config),
+        );
+    }
+
+    return $operations;
+}
+
+function so_listings_update_nodes_view_modes($nids, $view_mode) {
+
+    $view_modes_settings = so_listings_get_view_modes_settings('default_view_modes');
+
+    foreach($nids as $nid) {
+
+        $type = db_query("SELECT type FROM {node} WHERE nid=?", array($nid))->fetchColumn();
+
+        if($view_modes_settings[$type] == 'disabled') {continue;}
+
+        db_query("REPLACE INTO {so_listings_view_modes} SET nid=?, config=?", array($nid, $view_mode));
+    }
+}
+
+/*
+ * Implementation of hook_node_insert()
+ */
+function so_listings_node_insert($node) {
+
+    $default_view_modes = so_listings_get_view_modes_settings('default_view_modes');
+
+    if(array_key_exists($node->type, $default_view_modes) && $default_view_modes[$node->type] != 'disabled') {
+        db_query("INSERT INTO {so_listings_view_modes} SET nid=?, config=?", array($node->nid, $default_view_modes[$node->type]));
+    }
+}
+
+/*
+ * Implementation of hook_node_delete()
+ */
+function so_listings_node_delete($node) {
+    db_query("DELETE FROM {so_listings_view_modes} WHERE nid=?", array($node->nid));
+}
+
+/**
+ * Gathers all listing sources implemented by modules
+ *
+ * @param boolean $flat : if set to 'true' (default) returned array will be mono-dimensionnal and indexed by [module:group:id].
+ *                        Else, it will be quadri-dimensionnal : [module][group]['source'][id]
+ *
+ * @return array
+ */
+function so_listings_load_sources_pool($flat = true) {
+
+    $sources = array();
+
+    $modules = module_implements('so_listings');
+
+    foreach ($modules as $module) {
+        $function = $module . '_so_listings';
+        $groups = $function();
+
+        foreach ($groups as $group => $infos) {
+
+            if ($flat == true) {
+                foreach ($infos['sources'] as $id => $source) {
+                    $sources[$module . ':' . $group . ':' . $id] = $source;
+                    $sources[$module . ':' . $group . ':' . $id]['group'] = $infos['label'];
+                }
+            } else {
+                $sources[$module][$group] = $infos;
+            }
+        }
+    }
+
+    return $sources;
+}
+
+/**
+ * Provides on or more presets stored in database.
+ * If $id is not provided, whole presets will be returned.
+ *
+ * @param string $id
+ *
+ * @return array of stdClass indexed by 'id', or single stdClass if $id is provided
+ */
+function so_listings_get_presets($id = null) {
+
+    // TODO : étudier la possibilité d'une mise en cache statique
+
+    $filters = array(
+        'id' => $id,
+    );
+
+    $filters = array_filter($filters);
+    $where = array_keys($filters);
+    $filters = array_values($filters);
+
+    array_walk($where, function(&$value) {
+                $value .= "=?";
+            });
+
+    $where[] = "1"; // pour meubler, s'il n'y a aucun filtre.
+
+    $where = implode(" AND ", $where);
+
+    $req = "SELECT * FROM {so_listings_presets} WHERE " . $where . " ORDER BY id='default' DESC, label ASC"; // 'default' en premier
+    $result = db_query($req, $filters);
+
+    $presets = array();
+
+    while ($row = $result->fetchObject()) {
+        $row->params = unserialize($row->params);
+
+        $presets[$row->id] = $row;
+    }
+
+    if (!empty($id)) {
+        $presets = $presets[$id];
+    }
+
+    return $presets;
+}
+
+/**
+ * Get the listing's data array structure, matching a preset.
+ *
+ * @param int $lid
+ * @param string $preset
+ * @param array &$options : used to complete preset's options (especially with modules' own parameters). Preset's options can also be overrided,
+ *                          but it's recommended to do not, since it would make maintenance harder. If it needed to override, consider to create a new preset.
+ *                          When function returns, contains all parameters set during process lifetime.
+ *                              - 'page' : force the page number set to display (overrides pager)
+ *
+ * @param array &$query : @see so_listings_compile()
+ *
+ * @return array :
+ *              - 'infos' : array : listing's parameters
+ *              - 'listing_index' : int : index of the listing in current page (also used as pager's index)
+ *              - 'nid' : int : nid of the node hosting the listing widget
+ *              - 'lid' : int : the listing database id
+ *              - 'preset' : string : the preset used to display the current listing
+ *              - 'options' : array : options used to build the query (basic options + modules' own options)
+ *              - ... @see so_listings_compile() for query own infos
+ *
+ *
+ *          - 'nodes' : array : indexed by nid : extracted data (including at least the nid)
+ */
+function so_listings_listing($lid, $preset = 'default', &$options = array(), &$query = array()) {
+
+    $listing_index = &drupal_static(__FUNCTION__);
+
+    if (!isset($listing_index)) {
+        $listing_index = (int)$options['listing_index'];
+    }
+
+    $options = _so_listings_array_merge_recursive_distinct(so_listings_get_presets($preset)->params, $options);
+
+    if ((int)$options['limit_num'] == 0) {
+        $options['limit_num'] = 10000;
+    }
+
+    if ((int)$options['limit_to'] == 0) {
+        $options['limit_to'] = 10000;
+    }
+
+    if ($options['so_listings']['pager'] == true) {
+        $current_page = array_key_exists('page', $options) && is_numeric($options['page']) ? $options['page'] : pager_find_page($listing_index);
+        $options['limit_from'] = $current_page * $options['limit_num'];
+        $options['count'] = true;
+        $options['count_method'] = 'query';
+    }
+
+    if($options['so_listings']['listing'] == true) {
+        $listing = so_listings_compile($lid, $options, $query);
+
+        if ($options['so_listings']['pager'] == true) {
+            $max_page = pager_default_initialize($listing['infos']['count'], $options['limit_num'], $listing_index);
+
+            if($current_page > $max_page) {
+                $url_params = drupal_get_query_parameters();
+
+                $pager_params = explode(',', $url_params['page']);
+                $pager_params[$listing_index] = $max_page;
+                $url_params['page'] = implode(',', $pager_params);
+                $_GET['page'] = $url_params['page'];
+            }
+
+            $listing['infos']['listing_index'] = $listing_index;
+            $listing_index++;
+        }
+    } else {
+        $listing = array('infos' => array());
+    }
+
+    if($options['so_listings']['title'] != true) {
+        unset($listing['infos']['title']);
+    }
+
+    $listing_node_wrapper = menu_get_object();
+
+    $listing['infos']['nid'] = $listing_node_wrapper->nid;
+    $listing['infos']['lid'] = $lid;
+    $listing['infos']['preset'] = $preset;
+    $listing['infos']['options'] = $options;
+
+    $settings = variable_get('sol_settings', array());
+
+    //--- DEBUG : output
+    if (($options['debug'] !== false && ($settings['debug'] == true && (arg(0) != 'admin' && arg(0) != 'system'))) && module_exists('devel') && user_access('configure so_listings') == true) {
+        dpm($listing, "<strong>DEBUG - SOL output</strong>");
+    }
+
+    return $listing;
+}
+
+function _so_listings_array_merge_recursive_distinct(array &$array1, array &$array2)
+{
+    $merged = $array1;
+
+    foreach ($array2 as $key => &$value) {
+        if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
+            $merged[$key] = _so_listings_array_merge_recursive_distinct($merged[$key], $value);
+        } else {
+            $merged[$key] = $value;
+        }
+    }
+
+    return $merged;
+}
+
+/**
+ * Builds and executes the query.
+ *
+ * @param int $lid
+ * @param array &$options :
+ *                  - 'context' string : (null) force the query to be processed in the given context, overriding all other context directives.
+ *                  - 'filters' : boolean : (true) apply filters ?
+ *                  - 'search' : boolean : (false) apply search ?
+ *                  - 'search_values' : array : raw so_forms values
+ *                  - 'sorting' : boolean : (false) apply order by ?
+ *                  - 'status' : int : (1) : filter nodes by status ('0' or '1'). If status is === 'null' no filtering occurs.
+ *                  - 'count' : boolean : (false) count results ?
+ *                  - 'count_method' : string : use a count query (=> 'query') or a simple 'count()' (=> 'count') on results array ?
+ *                  - 'limit_from' : int : (0)
+ *                  - 'limit_to' : int : (10000) : maximum number of results.
+ *                  - 'limit_num' : int : (10000) : maximum number of result for a single query.
+ *                  - 'wrapping_queries' : boolean : (false) use wrapping queries ?
+ *                  - 'debug' : mixed : (null) : if set to 'true' or a string, the query will be displayed in Drupal message zone (in the second case
+ *                              zone will be titled with the string). If explicitly set to 'false', query never be displayed, even if debug mode has been
+ *                              activated in module's settings.
+ *                  - 'debug_infos' : string : ("") : a string to complete listing name in debug mode.
+ *                  - [module name] : array : these data will be passed to modules which implements query hooks.
+ *
+ * @param array $query
+ *
+ * @return array :
+ *          - 'infos' : array :
+ *                      - 'count' : if option 'count' set to 'true' and 'count_method' to 'query' : total number of nodes provided by count query. If 'count_method'
+ *                        is set to 'count', a simple count() is performed on results.
+ *
+ *          - 'nodes' : array keyed by nid : each extracted field can be a single value or an array of values
+ */
+function so_listings_compile($lid, &$options = array(), &$query = array()) {
+
+    if (empty($lid)) {
+        return array();
+    }
+
+    $default_options = array(
+        'context' => null,
+        'filters' => true,
+        'search' => false,
+        'search_values' => array(),
+        'sorting' => false,
+        'status' => 1,
+        'count' => false,
+        'count_method' => 'count',
+        'limit_from' => 0,
+        'limit_to' => 10000,
+        'limit_num' => 10000, // db_query_range ne propose pas d'option "unlimited"
+        'wrapping_queries' => false,
+        'debug' => null,
+        'debug_infos' => "",
+    );
+
+    $options = array_merge($default_options, $options);
+
+    $definition = so_listings_get_listings_definitions($lid);
+    $options['so_listings']['definition'] = $definition;
+    $options['so_listings']['sources_by_module'] = array();
+
+    // ces paramètres seront donc passés aux hooks dans le paramètre '$data'.
+    $options = array_merge_recursive($options, (array)$definition->params['modules_settings']);
+
+    foreach($definition->params['sources'] as $source) {
+        $source = explode(':', $source);
+        $options['so_listings']['sources_by_module'][$source[0]][$source[1]] = $source[2];
+    }
+
+    if (empty($definition)) {
+        return array();
+    }
+
+    $messages = array();
+
+    $listing = array(
+        'infos' => array(
+            'title' => $definition->title,
+        ),
+        'nodes' => array(),
+    );
+
+    $settings = variable_get('sol_settings', array());
+
+    if (empty($query)) {
+        $query = so_listings_init_query();
+        $query['#context'][] = 'so_listings_default';
+    }
+
+    //--- STATUS
+    if($options['status'] !== null) {
+        $query['join'][] = "LEFT JOIN {node_revision} AS nr ON nr.vid=n.vid";
+        $query['where'][] = "nr.status=" . $options['status'];
+    }
+
+    //--- DATA SOURCES + FILTERS
+
+    if($options['filters'] == true && !empty($definition->cache['filters']['filters'])) {
+
+        $filters_sets = array_merge(array('global_filters'), $definition->params['sources']);
+
+        $filters_where = array();
+
+        foreach ($filters_sets as $filters_set) {
+
+            $filters_query = $definition->cache['filters']['filters'][$filters_set];
+
+            if(empty($filters_query)) {continue;}
+
+            $filter = $filters_query['where'][0];
+
+            if(!is_array($filter)) {
+
+                /* 28/05/2015 : je ne pense pas qu'on ait besoin de ces clauses-là pour les filtres
+                    $query['group_by'] = array_merge($query['group_by'], $filters_query['group_by']);
+                    $query['having'] = array_merge($query['having'], $filters_query['having']);
+                */
+
+                $query['fields'] = array_merge($query['fields'], $filters_query['fields']);
+                $query['join'] = array_merge($query['join'], $filters_query['join']);
+
+                $filters_where[] = $filter;
+                $query['args'] = array_merge($query['args'], $filters_query['args']);
+
+            } else {
+
+                $args_offset = 0;
+
+                foreach($filter['callbacks'] as $placeholder => $infos) {
+
+                    $tmp_query = so_listings_init_query();
+                    $tmp_query['#context'] = array();
+
+                    $options[$infos['module']] = array_merge((array)$options[$infos['module']], (array)$infos['settings']);
+
+                    $empty = array();
+
+                    $messages[] = $infos['callback'](
+                        $tmp_query,
+                        $lid,
+                        $options[$infos['module']],
+                        array_key_exists($infos['module'], $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$infos['module']] : $empty
+                    );
+
+                    if(!empty($tmp_query['where'])) {
+                        $filter['clause'] = str_replace($placeholder, $tmp_query['where'][0], $filter['clause']);
+                    } else {
+                        $filter['clause'] = str_replace($placeholder, "1", $filter['clause']);
+                    }
+
+                    if(!empty($tmp_query['args'])) {
+
+                        // lorsque l'on insert plusieurs arguments à la place d'un placeholder,
+                        // cela décale d'autant les valeurs d'offset d'origine des placeholders suivants.
+                        $insertion_offset = $filters_query['args'][$placeholder] + $args_offset;
+                        $args_offset += count($tmp_query['args']) - 1;
+
+                        array_splice($filters_query['args'], $insertion_offset, 1, $tmp_query['args']);
+
+                    } else {
+                        unset($filters_query['args'][$placeholder]);
+                    }
+
+                    $query['#context'] += $tmp_query['#context'];
+                    $query['fields'] = array_merge($query['fields'], $tmp_query['fields'], $filters_query['fields']);
+                    $query['join'] = array_merge($query['join'], $tmp_query['join'], $filters_query['join']);
+
+                }
+
+                $filters_where[] = $filter['clause'];
+                $query['args'] = array_merge($query['args'], $filters_query['args']);
+            }
+        }
+
+        $global_where = array_shift($filters_where);
+
+        $query['where'][] = !empty($global_where) ?
+                            "(" . $global_where . " AND (" . implode(" OR ", $filters_where) . "))" :
+                            "(" . implode(" OR ", $filters_where) . ")";
+    }
+
+    //--- SEARCH FILTER
+    $options['so_listings']['matching_modes'] = so_listings_get_matching_patterns();
+
+    if($options['search'] == true) {
+        $messages[] = so_listings_search_filter($lid, $query, $options, $definition);
+    }
+
+    //--- QUERY ALTER (hook_so_listings_query())
+
+    $modules = module_implements('so_listings_query');
+
+    foreach($modules as $module) {
+        $module_options = array_key_exists($module, $options) ? $options[$module] : array();
+
+        $function = $module . '_so_listings_query';
+        $messages[] = $function(
+            $query,
+            $module_options,
+            array_key_exists($module, $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$module] : array()
+        );
+    }
+
+    //--- CONTEXT
+    // (@see so_listings_init_query() for documentation)
+
+    if(!empty($options['context'])) {
+        $context = $options['context'];
+    } else {
+        $contexts = so_listings_get_contexts();
+        $filtered_contexts = array_intersect_key($contexts, array_flip($query['#context']));
+        $context = !empty($filtered_contexts) ? key($filtered_contexts) : 'so_listings_default';
+    }
+
+    //--- SORTING
+
+    $sorting = array();
+
+    if($options['sorting'] == true) {
+
+        // si des clauses ont déjà été fournies, ça n'aurait aucun sens d'aller en rajouter d'autres (avant ? après ? lesquelles ? quid des doublons ? etc.)
+        if(empty($query['order_by']) && array_key_exists($context, $definition->cache['sorting'])) {
+
+            $sorting = $definition->cache['sorting'][$context];
+
+            // on parcourt les différentes instances (d'instances) jusqu'à trouver les clauses finales
+            while(!is_array($sorting)) {
+                $sorting = $definition->cache['sorting'][$sorting];
+            }
+
+        } else {
+            $sorting = $query['order_by'];
+        }
+    }
+
+    // il faut donner une directive finale de tri à MySQL pour les fiches de même ordre (ou en l'absence d'ordre),
+    // pour avoir toujours des listings identiques (MySQL agissant de manière imprévisible en l'absence de directive)
+    $sorting[] = array(
+        'order_by' => "n.nid ASC",
+        'join' => array(),
+    );
+
+    //--- ORDER BY
+
+    $order_by = array();
+
+    foreach($sorting as $clause) {
+
+        if(is_array($clause)) {
+
+            $order_by[] = $clause['order_by'];
+            $query['join'] = array_merge($query['join'], array_filter($clause['join']));
+
+        } elseif(is_callable($clause)) {
+
+            $module = $clause(); // le callback doit retourner le nom de son module parent.
+            $module_options = array_key_exists($module, $options) ? $options[$module] : array();
+
+            // @see so_listings.api.php:hook_so_listings_sorting()
+            $callback_sorting = $clause(
+                $context,
+                $module_options,
+                array_key_exists($module, $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$module] : array()
+            );
+
+            if(empty($callback_sorting)) {continue;}
+
+            $order_by[] = $callback_sorting['order_by'];
+            $query['join'] = array_merge($query['join'], array_filter($callback_sorting['join']));
+        }
+    }
+
+    $order_by = " ORDER BY " . implode(', ', array_filter($order_by));
+
+    //--- JOIN
+    // certains fragments proviennent du cache, le générateur de fragment data ne les a pas vu passer. Les tables n'ont donc pas
+    // pu être enregistrées. On peut donc se retrouver avec des JOIN en double, et donc des alias en double -> error sql
+    $query['join'] = array_unique($query['join']);
+    $join_clause = !empty($query['join']) ? " " . implode(' ', $query['join']) : "";
+
+    //--- WHERE
+    $where_clause = !empty($query['where']) ? " WHERE " . implode(' AND ', $query['where']) : "";
+
+    //--- GROUP BY
+    $group_by_clause = !empty($query['group_by']) ? " GROUP BY " . implode(',', $query['group_by']) : "";
+
+    //--- HAVING
+    $having_clause = !empty($query['having']) ? " HAVING " . implode(' AND ', $query['having']) : "";
+
+    //--- ARGUMENTS
+
+    $args = $query['args'];
+
+    //--- WRAPPING QUERIES (hook_so_listings_wrapping_query())
+
+    $wrapping_query_string_head = "";
+    $wrapping_query_string_tail = "";
+    $nid_fields_filtering = array(); // dans le listing, on ne conservera que les nids du premier et du dernier niveau.
+
+    if($options['wrapping_queries'] == true) {
+
+        $modules = module_implements('so_listings_wrapping_query');
+        $wrapping_level = count($modules);
+        $last_nid_alias = "nid_origine";
+        $nid_field = "n.nid AS " . $last_nid_alias;
+
+        foreach($modules as $module) {
+
+            $wrapping_query = array(
+                'fields' => array(),
+                'join' => array(),
+                'where' => array(),
+                'args' => array(),
+            );
+
+            $function = $module . '_so_listings_wrapping_query';
+            $module_options = array_key_exists($module, $options) ? $options[$module] : array();
+
+            $nid_column_name = $function(
+                $wrapping_query,
+                "sub_nid_" . ($wrapping_level + 1),
+                $module_options,
+                array_key_exists($module, $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$module] : array()
+            );
+
+            if(count(array_filter($wrapping_query)) > 0 || !empty($nid_column_name)) {
+                $wrapping_query['join'] = array_unique($wrapping_query['join']);
+                $wrapping_join_clause = !empty($wrapping_query['join']) ? " " . implode(' ', $wrapping_query['join']) : '';
+
+                $wrapping_where_clause = !empty($wrapping_query['where']) ? " WHERE " . implode(' AND ', $wrapping_query['where']): '';
+
+                $args = array_merge($args, $wrapping_query['args']);
+
+                if(!empty($nid_column_name)) {
+
+                    if($wrapping_level == 1) {
+                        array_unshift($wrapping_query['fields'], $nid_column_name . " AS nid");
+                        $nid_fields_filtering[$nid_column_name] = true;
+                    } else {
+                        $last_nid_alias = "sub_nid_" . $wrapping_level;
+                        array_unshift($wrapping_query['fields'], $nid_column_name . " AS " . $last_nid_alias);
+                        $nid_fields_filtering[$nid_column_name] = true;
+                    }
+
+                } else {
+
+                    if($wrapping_level == 1) {
+                        array_unshift($wrapping_query['fields'], $last_nid_alias . " AS nid");
+                        $nid_fields_filtering[$last_nid_alias] = true;
+                    } else {
+                        array_unshift($wrapping_query['fields'], $last_nid_alias . " AS sub_nid_" . $wrapping_level);
+                        $nid_fields_filtering[$last_nid_alias] = true;
+                        $last_nid_alias = "sub_nid_" . $wrapping_level;
+                    }
+                }
+
+                $wrapping_fields = !empty($wrapping_query['fields']) ? "," . implode(',', $wrapping_query['fields']) : "";
+
+                $wrapping_query_string_head = "SELECT DISTINCT subquery.*" . $wrapping_fields . " FROM (" . $wrapping_query_string_head;
+                $wrapping_query_string_tail = $wrapping_query_string_tail . ") AS subquery" . $wrapping_join_clause . $wrapping_where_clause;
+            }
+
+            $wrapping_level--;
+        }
+
+        if(!empty($wrapping_query_string_tail)) {
+            $wrapping_query_string_tail .= " GROUP BY nid";
+        }
+    }
+
+    if(empty($wrapping_query_string_head)) {
+        $nid_field = "n.nid AS nid";
+    }
+
+    //--- FIELDS
+    array_unshift($query['fields'], $nid_field);
+    $fields = implode(', ', array_unique($query['fields']));
+
+    //--- COUNT QUERY
+
+    if ($options['count'] == true && $options['count_method'] == 'query') {
+
+        // on ne compte que les nids, et on n'a pas besoin d'extraire les autres champs, ou de procéder au tri.
+        $count_query_string = $wrapping_query_string_head .
+                                "SELECT DISTINCT " . $fields .
+                                " FROM {node} AS n" .
+                                $join_clause .
+                                $where_clause .
+                                $group_by_clause .
+                                $having_clause .
+                              $wrapping_query_string_tail .
+                              " LIMIT 0," . $options['limit_to'];
+
+        $listing['infos']['count'] = db_query("SELECT COUNT(DISTINCT(nid)) FROM (" . $count_query_string . ") as count_query", $args)->fetchColumn();
+    }
+
+    //--- QUERY
+
+    $query_string = $wrapping_query_string_head .
+                        "SELECT DISTINCT " . $fields .
+                        " FROM {node} AS n" .
+                        $join_clause .
+                        $where_clause .
+                        $group_by_clause .
+                        $having_clause .
+                        $order_by .
+                    $wrapping_query_string_tail;
+
+    // DEBUG : query
+    if (($options['debug'] !== false && ($settings['debug'] == true && (arg(0) != 'admin' && arg(0) != 'system'))) && user_access('configure so_listings') == true) {
+
+        $query_string_debug = $query_string;
+        $args_debug = $args;
+
+        $connection = Database::getConnection();
+
+        foreach ($args_debug as &$arg) {
+            if (!is_numeric($arg)) {
+                $arg = $connection->quote($arg);
+            }
+
+            $query_string_debug = preg_replace('#\?#', $arg, $query_string_debug, 1);
+        }
+
+        $dump = strtr($query_string_debug, array('{' => '', '}' => ''));
+
+        if(!class_exists('SqlFormatter')) {
+            require_once('lib/SqlFormatter.php');
+        }
+
+        $destination = drupal_get_destination();
+
+        if($_SESSION['expand_sql'] == 1) {
+            $formated_dump = SqlFormatter::format($dump);
+            $link = l(t("compacted"), "so_listings/sql_debug_mode/0", array('query' => $destination));
+        } else {
+            $formated_dump = SqlFormatter::highlight($dump);
+            $link = l(t("expanded"), "so_listings/sql_debug_mode/1", array('query' => $destination));
+        }
+
+        drupal_set_message("<strong>DEBUG - SOL query : " . $definition->name . "</strong> - " . $options['debug_infos'] . "<br />" . $formated_dump . $link);
+    }
+
+    $results = db_query_range($query_string, $options['limit_from'], $options['limit_num'], $args);
+
+    while ($row = $results->fetchObject()) {
+        $listing['nodes'][$row->nid] = array_merge_recursive((array) $listing['nodes'][$row->nid], array_diff_key((array) $row, $nid_fields_filtering));
+    }
+
+    if ($options['count'] == true && $options['count_method'] == 'count') {
+        $listing['infos']['count'] = count($listing['nodes']);
+    }
+
+    //--- hook_so_listings_listing()
+    $modules = module_implements('so_listings_listing');
+
+    foreach($modules as $module) {
+        $function = $module . '_so_listings_listing';
+        $module_options = array_key_exists($module, $options) ? $options[$module] : array();
+
+        $messages[] = $function(
+            $listing,
+            $module_options,
+            array_key_exists($module, $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$module] : array()
+        );
+    }
+
+    $messages = array_unique(array_filter($messages));
+
+    foreach($messages as $message) {
+        drupal_set_message($message);
+    }
+
+    return $listing;
+}
+
+function so_listings_get_matching_patterns($mode = null) {
+    $modes = array(
+        'contain' => '%$%',
+        'start' => '$%',
+        'match' => '$',
+    );
+
+    if(!empty($mode)) {
+        return $modes[$mode];
+    }
+
+    return $modes;
+}
+
+function so_listings_sql_debug_mode($mode) {
+    $_SESSION['expand_sql'] = $mode;
+    drupal_goto();
+}
+
+/*
+ * Implementation of hook_so_listings_contexts()
+ */
+function so_listings_so_listings_contexts() {
+
+    return array(
+        'so_listings_default' => array(
+            'label' => t("Standard listing"),
+        ),
+        'so_listings_search' => array(
+            'label' => t("Standard search"),
+        ),
+    );
+}
+
+/*
+ * Implementation of hook_so_listings_contexts()
+ */
+function node_so_listings_sorting() {
+
+    return array(
+        'node_title_asc' => array(
+            'label' => t("Title by ascending alphabetical order"),
+            'clause' => "n.title ASC",
+            'join' => null,
+            'contexts' => array(),
+        ),
+        'node_title_desc' => array(
+            'label' => t("Title by descending alphabetical order"),
+            'clause' => "n.title ASC",
+            'join' => null,
+            'contexts' => array(),
+        ),
+    );
+}
+
+/**
+ * Callback for hook_so_listings()
+ *
+ * @param array &$query
+ * @param array $args
+ * @param array $options
+ */
+function so_listings_sources_callback(&$query, $args, $options) {
+
+    $query['where'][] = "n.type=?";
+    $query['args'][] = $args[0];
+}
+
+/**
+ * Builds a query fragment data object (fields + joins) for node based queries ONLY.
+ * The function avoids tables to be joined more than once.
+ * Called without argument, resets the tables pool.
+ *
+ * @param string $field_name : field_name@table_name : '@node' for {node}'s fields, '@field' for Field API fields and '@[table name]' for proprietary fields.
+ *
+ * @return stdClass fragment object :
+ *          - 'joins' : array of strings : complete JOIN clauses.
+ *          - 'table' : string : table name matching the field.
+ *          - 'fields' : array : fields names strings. Fields names are prefixed with their table alias.
+ *                               Field API's fields are indexed by their columns' suffix names. Other types are indexed numerically.
+ *          - 'infos' : array : Field's fields infos.
+ */
+function so_listings_prepare_query_fragment_data($field_name = null) {
+
+    $tables_pool = &drupal_static(__FUNCTION__);
+
+    if ($field_name == null) {
+        $tables_pool = array();
+        return;
+    }
+
+    $field_name = explode('@', $field_name);
+
+    $fragment_data = new stdClass();
+    $fragment_data->joins = array();
+    $fragment_data->fields = array();
+    $fragment_data->infos = array();
+
+    if ($field_name[1] == 'node') {
+
+        $fragment_data->table = 'n';
+        $fragment_data->fields = array(
+            "n." . $field_name[0],
+        );
+    } elseif ($field_name[1] == 'field') {
+
+        $fragment_data->infos = field_info_field($field_name[0]);
+        $sql_columns = array_keys($fragment_data->infos['storage']['details']['sql']['FIELD_LOAD_CURRENT']);
+        $fragment_data->table = array_pop($sql_columns);
+        $fields = $fragment_data->infos['storage']['details']['sql']['FIELD_LOAD_CURRENT'][$fragment_data->table];
+
+        if (!isset($tables_pool[$fragment_data->table])) {
+            $fragment_data->joins[] = "LEFT JOIN {" . $fragment_data->table . "} AS " . $fragment_data->table . " ON " . $fragment_data->table . ".entity_id=n.nid";
+
+            $tables_pool[$fragment_data->table] = 1;
+        }
+
+        foreach ($fields as $column => $field) {
+            $fragment_data->fields[$column] = $fragment_data->table . "." . $field;
+        }
+    } else {
+
+        $fragment_data->table = $field_name[1];
+
+        if (!isset($tables_pool[$fragment_data->table])) {
+            $fragment_data->joins[] = "LEFT JOIN {" . $fragment_data->table . "} AS " . $fragment_data->table . " ON " . $fragment_data->table . ".nid=n.nid";
+
+            $tables_pool[$fragment_data->table] = 1;
+        }
+
+        $fragment_data->fields[] = $fragment_data->table . "." . $field_name[0];
+    }
+
+    return $fragment_data;
+}
+
+/**
+ * Provides a preformated query array and possibly resets the tables pool.
+ *
+ * Strive to use so_listings_prepare_query_fragment_data() to build your clauses.
+ *
+ * @param boolean $reset : if set to true (default), the table pool of so_listings_prepare_query_fragment_data() will be reseted.
+ *
+ * @return array :
+ *      - '#context' : array : depending on the performed action, modules are able to set a context to compile within. Modules shouldn't overwrite this entry.
+ *                             They should make additions instead and let so_listings choose the appropriate context based on module's settings.
+ *                             Currently, contexts are used by sorting process only, but this information is passed as argument to somme hooks.
+ *                             (@see so_listings.api.php to know wich ones use it)
+ *                             SOL implements two contexts : 'so_listings_default' and 'so_listings_search'.
+ *
+ *      - 'fields' : array : additional fields to extract, with or without aliases.
+ *      - 'join' : array : complete SQL JOIN clauses, with or without table aliases, and ON directive.
+ *      - 'where' : array : unique or grouped clauses, without starting operator (clauses will be gathered with 'AND' operator).
+ *                          Don't use named placeholders for arguments ; Use '?' instead.
+ *                          Clauses' author is responsible to encapsulate his groups with parenthesis.
+ *      - 'group_by' : array : all clauses will be gathered with ','. Order of the array will be preserved.
+ *      - 'having' : array : all clauses will be gathered with 'AND' operator. Order of the array will be preserved.
+ *      - 'order_by' : array : non-associative array of mixed :
+ *                                  - string : a module's dynamic callback function name @see so_listings.api.php:hook_so_listings_sorting()
+ *
+ *                                  - array : associative :
+ *                                      - 'order_by' : string : one or more SQL ORDER BY clauses.
+ *                                      - 'join' : array : @see 'join' above
+ *
+ *      - 'args': array : non-indexed array of query arguments.
+ *
+ * @see so_listings_compile() for further informations on query building.
+ * @see so_listings_prepare_query_fragment_data() for further informations on SQL query fragments generation.
+ */
+function so_listings_init_query($reset = true) {
+
+    if ($reset == true) {
+        so_listings_prepare_query_fragment_data();
+    }
+
+    return array(
+        '#context' => array(),
+        'fields' => array(),
+        'join' => array(),
+        'where' => array(),
+        'group_by' => array(),
+        'having' => array(),
+        'order_by' => array(),
+        'args' => array(),
+    );
+}
+
+/*
+ * Implementation of hook_so_listings()
+ * Offer content types as sources for listings.
+ */
+function so_listings_so_listings() {
+
+    $settings = variable_get('sol_settings', array());
+    $allowed_nodes_types = array_filter((array)$settings['nodes_types']);
+
+    $nodes_types = array_intersect_key(node_type_get_types(), (array)$allowed_nodes_types);
+
+    if(empty($nodes_types)) {return array();}
+
+    $types = array();
+
+    foreach ($nodes_types as $type => $infos) {
+        $types[$type] = array(
+            'label' => $infos->name,
+            'args' => array($type),
+        );
+    }
+
+    // si la structure devait changer, il faut penser à modifier également so_listings_view_modes_form()
+    return array(
+        array(
+            'label' => t("Nodes of type"),
+            'callback' => 'so_listings_sources_callback',
+            'sources' => $types,
+        ),
+    );
+}
+
+/*
+ * Implementation of hook_so_listings_preset()
+ */
+function so_listings_so_listings_preset(&$form, $default_values) {
+
+    $form['listing'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Display listing"),
+        '#default_value' => $default_values['listing'],
+    );
+
+    $settings = variable_get('sol_settings', array());
+    $display_types = explode(',', $settings['listing_display_types']);
+
+    $display_types_options = array('default' => "Default");
+
+    foreach($display_types as $display_type) {
+        $display_types_options[strtolower(trim($display_type))] = $display_type;
+    }
+
+    $display_types_options = array_filter($display_types_options);
+
+    $form['listing_display_type'] = array(
+        '#type' => 'select',
+        '#title' => t("Nodes list display type (template)"),
+        '#options' => $display_types_options,
+        '#default_value' => $default_values['listing_display_type'],
+    );
+
+    $node_entity_infos = entity_get_info('node');
+    $view_modes_options = array(
+        '' => "- " . t("Use mode defined in each node") . " -",
+    );
+
+    foreach ($node_entity_infos['view modes'] as $view_mode => $infos) {
+        $view_modes_options[$view_mode] = $infos['label'];
+    }
+
+    $form['nodes_view_mode'] = array(
+        '#type' => 'select',
+        '#title' => t("Nodes' view mode"),
+        '#options' => $view_modes_options,
+        '#default_value' => $default_values['nodes_view_mode'],
+    );
+
+    $form['search_form'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Display search form"),
+        '#default_value' => $default_values['search_form'],
+    );
+
+    $form['title'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Display listing's title"),
+        '#default_value' => $default_values['title'],
+    );
+
+    $form['pager'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Use pager"),
+        '#default_value' => $default_values['pager'],
+    );
+
+    $form['ajax'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Use AJAX"),
+        '#default_value' => $default_values['ajax'],
+    );
+
+    $form['tie_with_standalone'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Provide listing URL and breadcrumb infos to the standalone node"),
+        '#default_value' => $default_values['tie_with_standalone'],
+    );
+}
+
+/**
+ * Implementation of hook_so_forms() for node
+ */
+function node_so_forms($module, $id) {
+
+    if($module != 'so_listings') {return;}
+
+    $fields = array(
+        'fields_definitions' => array(
+            'title' => array(
+                'label' => t("Title"),
+                'type' => 'text',
+                'callbacks' => array(
+                    'configuration' => 'so_listings_search_field_configuration',
+                ),
+            ),
+        ),
+    );
+
+    return $fields;
+}
+
+/*
+ * Implementation of hook_so_listings_search() for node
+ */
+function node_so_listings_search($field, &$query, &$data) {
+
+    if($field['field_name'] != 'title') {return;}
+
+    $value = trim($field['values'][0]);
+
+    if(empty($field['values'][0])) {return;}
+
+    $matching_mode = so_listings_get_matching_patterns(
+        isset($field['configuration']['matching_mode']) ?
+        $field['configuration']['matching_mode'] :
+        'contain'
+    );
+
+    $input_value = preg_replace('#[\s-&()_\+\!,\:;\.\"\']#', '_', $value);
+
+    $query['where'][] = "n.title LIKE ?";
+    $query['args'][] = str_replace('$', $input_value, $matching_mode);
+}
+
+function so_listings_cron() {
+    db_query("TRUNCATE TABLE {so_listings_map}");
+
+    $definitions = so_listings_get_listings_definitions();
+
+    $options = array(
+        'filters' => true,
+        'search' => false,
+        'sorting' => false,
+        'status' => null,
+        'count' => false,
+        'limit_from' => 0,
+        'limit_to' => 10000,
+        'limit_num' => 10000, // db_query_range ne propose pas d'option "unlimited"
+        'debug' => null,
+    );
+
+    foreach($definitions as $definition) {
+        if($definition->params['listing_parent'] != true) {continue;}
+
+        $results = so_listings_compile($definition->id, $options);
+
+        if(empty($results['nodes'])) {continue;}
+
+        foreach($results['nodes'] as $nid => $node) {
+            db_query("REPLACE INTO {so_listings_map} SET nid=?, lid=?", array($nid, $definition->id));
+        }
+    }
+
+    return;
+}
+
+/**
+ * Return the parent listing of a node.
+ * The facts this function returns an empty array doesn't mean the node has no parent ;
+ * It simply means the possibly parent listing hasn't be set as a parent one.
+ *
+ * @param int $nid
+ * @return array of $lids
+ */
+function so_listings_get_node_parent_listing($nid) {
+    $results = db_query("SELECT lid FROM {so_listings_map} WHERE nid=?", array($nid));
+
+    $parents = array();
+
+    while($row = $results->fetchObject()) {
+        $parents[] = $row->lid;
+    }
+
+    return $parents;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function so_listings_theme() {
+
+    $path = drupal_get_path('module', 'so_listings') . '/theme';
+
+    $theme = array(
+        'so_listings_overview' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+
+        'so_listings_view_modes_overview' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+
+        'so_listings_presets_overview' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'so_listings_new_preset' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+
+        'so_listings_contexts_overview' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+
+        'so_listings_widget_presets' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'field__listing_type' => array(
+            'render element' => 'element',
+            'template' => 'field--listing_type',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'so_listing' => array( // whole listing render array
+            'render element' => 'element',
+            'template' => 'so_listing',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'listing' => array( // nodes list render array
+            'render element' => 'element',
+            'template' => 'listing',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+
+        'so_listings_filters_clauses_overview' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'so_listings_filters_add_clause' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'so_listings_filters_add_group' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'so_listings_filters_clause' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'so_listings_filters_clause_args' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+
+        'so_listings_sorting_context_clauses' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+        'so_listings_sorting_custom_clauses' => array(
+            'render element' => 'element',
+            'file' => 'theme.inc',
+            'path' => $path,
+        ),
+    );
+
+    $settings = variable_get('sol_settings', array());
+    $display_types = explode(',', $settings['listing_display_types']);
+
+    foreach($display_types as $display_type) {
+
+        $theme['listing__' . strtolower(trim($display_type))] = array(
+            'render element' => 'element',
+            'template' => 'listing--' . strtolower(trim($display_type)),
+            'file' => 'theme.inc',
+            'path' => $path,
+        );
+    }
+
+    return $theme;
+}

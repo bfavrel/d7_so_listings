@@ -1,0 +1,7 @@
+name = "Listings blocks"
+description = "Defines the node type 'listing_block'. Such content type is intended to display listings in blocks."
+package = "Saison d'Or"
+core = 7.x
+
+dependencies[] = so_listings
+dependencies[] = nodeblock

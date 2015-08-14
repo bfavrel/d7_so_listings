@@ -1,0 +1,401 @@
+# $Id$
+#
+# French translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  so_listings_weather.yahoo.inc: n/a
+#  so_listings_weather.module: n/a
+#  so_listings_weather.info: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2015-07-03 17:58+0200\n"
+"PO-Revision-Date: 2015-07-03 18:01+0100\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: French <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"X-Generator: Poedit 1.5.4\n"
+
+#: so_listings_weather.yahoo.inc:6
+msgid "Tornado"
+msgstr "Tornade"
+
+#: so_listings_weather.yahoo.inc:7
+msgid "Tropical storm"
+msgstr "Tempête tropicale"
+
+#: so_listings_weather.yahoo.inc:8
+msgid "Hurricane"
+msgstr "Ouragan"
+
+#: so_listings_weather.yahoo.inc:9
+msgid "Severe thunderstorms"
+msgstr "Orages violents"
+
+#: so_listings_weather.yahoo.inc:10
+msgid "Thunderstorms"
+msgstr "Orages"
+
+#: so_listings_weather.yahoo.inc:11
+msgid "Mixed rain ad snow"
+msgstr "Pluie et neige"
+
+#: so_listings_weather.yahoo.inc:12
+msgid "Mixed rain ad sleet"
+msgstr "Pluie et neige fondue"
+
+#: so_listings_weather.yahoo.inc:13
+msgid "Mixed snow and sleet"
+msgstr "Neige et neige fondue"
+
+#: so_listings_weather.yahoo.inc:14
+msgid "Freezing drizzle"
+msgstr "Brouillard givrant"
+
+#: so_listings_weather.yahoo.inc:15
+msgid "Drizzle"
+msgstr "Bruine"
+
+#: so_listings_weather.yahoo.inc:16
+msgid "Freezing raing"
+msgstr "Pluie verglaçante"
+
+#: so_listings_weather.yahoo.inc:17;18
+msgid "Showers"
+msgstr "Averses"
+
+#: so_listings_weather.yahoo.inc:19
+msgid "Snow flurries"
+msgstr "Rafales de neige"
+
+#: so_listings_weather.yahoo.inc:20
+msgid "Light snow showers"
+msgstr "Légères chutes de neige"
+
+#: so_listings_weather.yahoo.inc:21
+msgid "Blowing snow"
+msgstr "Blizzard"
+
+#: so_listings_weather.yahoo.inc:22
+msgid "Snow"
+msgstr "Neige"
+
+#: so_listings_weather.yahoo.inc:23
+msgid "Hail"
+msgstr "Grêle"
+
+#: so_listings_weather.yahoo.inc:24
+msgid "Sleet"
+msgstr "Neige fondue"
+
+#: so_listings_weather.yahoo.inc:25
+msgid "Dust"
+msgstr "Poussière"
+
+#: so_listings_weather.yahoo.inc:26
+msgid "Foggy"
+msgstr "Brumeux"
+
+#: so_listings_weather.yahoo.inc:27
+msgid "Haze"
+msgstr "Brume"
+
+#: so_listings_weather.yahoo.inc:28
+msgid "Smoky"
+msgstr "Enfumé"
+
+#: so_listings_weather.yahoo.inc:29
+msgid "Blustery"
+msgstr "Bourrasques"
+
+#: so_listings_weather.yahoo.inc:30
+msgid "Windy"
+msgstr "Venteux"
+
+#: so_listings_weather.yahoo.inc:31
+msgid "Cold"
+msgstr "Froid"
+
+#: so_listings_weather.yahoo.inc:32
+msgid "Cloudy"
+msgstr "Nuageux"
+
+#: so_listings_weather.yahoo.inc:33
+msgid "Mostly cloudy (night)"
+msgstr "Nuageux la plupart du temps (la nuit)"
+
+#: so_listings_weather.yahoo.inc:34
+msgid "Mostly cloudy (day)"
+msgstr "Nuageux la plupart du temps (le jour)"
+
+#: so_listings_weather.yahoo.inc:35
+msgid "Partly cloudy (night)"
+msgstr "Partiellement nuageux (la nuit)"
+
+#: so_listings_weather.yahoo.inc:36
+msgid "Partly cloudy (day)"
+msgstr "Partiellement nuageux (le jour)"
+
+#: so_listings_weather.yahoo.inc:37
+msgid "Clear (night)"
+msgstr "Nuit claire"
+
+#: so_listings_weather.yahoo.inc:38
+msgid "Sunny"
+msgstr "Ensoleillé"
+
+#: so_listings_weather.yahoo.inc:39
+msgid "Fair (night)"
+msgstr "Belle nuit"
+
+#: so_listings_weather.yahoo.inc:40
+msgid "Fair (day)"
+msgstr "Belle journée"
+
+#: so_listings_weather.yahoo.inc:41
+msgid "Mixed rain and hail"
+msgstr "Pluie et grêle"
+
+#: so_listings_weather.yahoo.inc:42
+msgid "Hot"
+msgstr "Chaud"
+
+#: so_listings_weather.yahoo.inc:43
+msgid "Isolated thunderstorms"
+msgstr "Orages isolés"
+
+#: so_listings_weather.yahoo.inc:44
+msgid "Scattered thunderstorms"
+msgstr "Orages intermittents"
+
+#: so_listings_weather.yahoo.inc:45
+msgid "Scattered thunderstroms"
+msgstr "Orages intermittents"
+
+#: so_listings_weather.yahoo.inc:46
+msgid "Scattered showers"
+msgstr "Averses intermittentes"
+
+#: so_listings_weather.yahoo.inc:47;49
+msgid "Heavy snow"
+msgstr "Chutes de neige abondantes"
+
+#: so_listings_weather.yahoo.inc:48
+msgid "Scattered snow showers"
+msgstr "Chutes de neige intermittentes"
+
+#: so_listings_weather.yahoo.inc:50
+msgid "Partly cloudy"
+msgstr "Partiellement nuageux"
+
+#: so_listings_weather.yahoo.inc:51
+msgid "Thundershowers"
+msgstr "Averses orageuses"
+
+#: so_listings_weather.yahoo.inc:52
+msgid "Snow showers"
+msgstr "Chutes de neige"
+
+#: so_listings_weather.yahoo.inc:53
+msgid "Isolated thundershowers"
+msgstr "Averses orageuses isolées"
+
+#: so_listings_weather.module:9
+msgid "Configure module"
+msgstr "Configurer le module"
+
+#: so_listings_weather.module:10
+msgid "Edit module's settings."
+msgstr "Editer les paramètres du module."
+
+#: so_listings_weather.module:43
+msgid "Weather field"
+msgstr "Configuration météo"
+
+#: so_listings_weather.module:44
+msgid "SO Listing Weather Element"
+msgstr "Elément de SO Listings Weather"
+
+#: so_listings_weather.module:58
+msgid "Nomenclature used"
+msgstr "Nomenclature utilisée"
+
+#: so_listings_weather.module:85
+msgid "No mapping"
+msgstr "Aucun mappage"
+
+#: so_listings_weather.module:96;20
+msgid "Weather filter"
+msgstr "Filtrage météo"
+
+#: so_listings_weather.module:110
+msgid "Realtime weather"
+msgstr "La météo en temps réel"
+
+#: so_listings_weather.module:116
+msgid "Display only nodes which match"
+msgstr "N'afficher que les nodes qui correspondent à"
+
+#: so_listings_weather.module:125
+msgid "Display also nodes which not have weather settings"
+msgstr "Afficher aussi les nodes qui n'ont pas de configuration enregistrée"
+
+#: so_listings_weather.module:247
+msgid "Weather"
+msgstr "Météo"
+
+#: so_listings_weather.module:253
+msgid "How to set ?"
+msgstr "Comment paramétrer ?"
+
+#: so_listings_weather.module:254
+msgid ""
+"For exemple, for outdoor water activities, only 'good weather' should be "
+"checked."
+msgstr ""
+"Par exemple, pour une activité aquatique en extérieur, seul 'beau temps' "
+"devrait être coché."
+
+#: so_listings_weather.module:255
+msgid ""
+"But a museum can be visited regardless of the weather. In this case all "
+"three weathers should be checked."
+msgstr ""
+"Mais un musée peut être visité indépendamment de la météo. Dans ce cas, les "
+"trois types de temps devraient être cochés. "
+
+#: so_listings_weather.module:256
+msgid ""
+"But, on another side, you could decide to provide a museum as filtering "
+"result only if weather is bad (as an alternative)."
+msgstr ""
+"D'un autre côté, vous pouvez décider de ne fournir le musée comme résultat "
+"du filtrage que si le temps est mauvais (comme une alternative)."
+
+#: so_listings_weather.module:257
+msgid "It only depends on your own filtering policy."
+msgstr "Cela ne dépend que de votre propre politique de filtrage."
+
+#: so_listings_weather.module:262
+msgid "Reference city"
+msgstr "Ville de référence"
+
+#: so_listings_weather.module:269
+msgid "Suitable weather for this node"
+msgstr "Météo appropriée pour ce node"
+
+#: so_listings_weather.module:270
+msgid "You can find detailed weather states nomenclature !link"
+msgstr "Vous pouvez consulter la nomenclature détaillée des états météo !link"
+
+#: so_listings_weather.module:272
+msgid "here"
+msgstr "ici"
+
+#: so_listings_weather.module:287
+msgid ""
+"Since this node is in default language, all its weather settings will be "
+"automatically duplicated in all its translations."
+msgstr ""
+"Dans la mesure où ce node est en langage par défaut, tous ses paramètres "
+"météo seront automatiquement dupliqués dans toutes ses traductions."
+
+#: so_listings_weather.module:329
+msgid "Configuration"
+msgstr "Configuration"
+
+#: so_listings_weather.module:343
+msgid "Reference city code"
+msgstr "Code de la ville de référence"
+
+#: so_listings_weather.module:349
+msgid "Reference city label"
+msgstr "Label de la ville de référence"
+
+#: so_listings_weather.module:355
+msgid "Add"
+msgstr "Ajouter"
+
+#: so_listings_weather.module:362
+msgid "Nodes types"
+msgstr "Types de nodes"
+
+#: so_listings_weather.module:369
+msgid "Nodes types to filter"
+msgstr "Types de nodes à filtrer"
+
+#: so_listings_weather.module:377
+msgid "Weather mappings"
+msgstr "Mappages des météos"
+
+#: so_listings_weather.module:391
+msgid "Save"
+msgstr "Enregistrer"
+
+#: so_listings_weather.module:442
+msgid "Unknown"
+msgstr "Inconnu"
+
+#: so_listings_weather.module:449
+msgid "Delete"
+msgstr "Supprimer"
+
+#: so_listings_weather.module:461
+msgid "Good weather"
+msgstr "Beau temps"
+
+#: so_listings_weather.module:462
+msgid "Middle weather"
+msgstr "Temps moyen"
+
+#: so_listings_weather.module:463
+msgid "Bad weather"
+msgstr "Mauvais temps"
+
+#: so_listings_weather.module:531
+msgid "No city set"
+msgstr "Aucune ville définie"
+
+#: so_listings_weather.module:557
+msgid "City code"
+msgstr "Code de la ville"
+
+#: so_listings_weather.module:558
+msgid "City"
+msgstr "Ville"
+
+#: so_listings_weather.module:559
+msgid "Weight"
+msgstr "Poids"
+
+#: so_listings_weather.module:560
+msgid "Current weather"
+msgstr "Météo actuelle"
+
+#: so_listings_weather.module:217
+msgid "SOL Weather"
+msgstr "SOL Weather"
+
+#: so_listings_weather.module:217
+msgid "Unable to get data for city code : @code"
+msgstr "Impossible d'obtenir des données pour le code de ville : @code"
+
+#: so_listings_weather.info:0
+msgid "SO Listings Weather"
+msgstr "SO Listings Weather"
+
+#: so_listings_weather.info:0
+msgid ""
+"Provides SO Listings functionalities to filter listings according to current "
+"weather."
+msgstr ""
+"Fournit des fonctionnalités SO Listings pour filtrer les listings en "
+"fonction de la météo actualisée."
+
+#: so_listings_weather.info:0
+msgid "Saison d'Or"
+msgstr "Saison d'Or"

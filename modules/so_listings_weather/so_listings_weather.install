@@ -1,0 +1,51 @@
+<?php
+
+function so_listings_weather_install() {
+
+    variable_set('so_listings_weather_settings', array(
+        'general' => array(),
+        'nodes_types' => array(),
+        'weather_mappings' => array(),
+    ));
+
+    variable_set('so_listings_weather_current_weather', array());
+}
+
+function so_listings_weather_uninstall() {
+    variable_del('so_listings_weather_settings');
+    variable_del('so_listings_weather_current_weather');
+}
+
+function so_listings_weather_schema() {
+
+    $schema = array();
+
+    $schema['so_listings_weather'] = array(
+        'description' => "Store weather mappings for nodes",
+
+        'fields' => array(
+            'nid' => array(
+                'type' => 'int',
+                'not null' => true,
+                'unsigned' => true,
+                'description' => "The node's id.",
+            ),
+            'weather_type' => array(
+                'type' => 'int',
+                'size' => 'tiny',
+                'not null' => true,
+                'unsigned' => true,
+                'description' => "The SOL weather type numeric code.",
+            ),
+            'city' => array(
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => true,
+				'description' => "The code of reference city.",
+			),
+        ),
+    );
+
+    return $schema;
+}
+

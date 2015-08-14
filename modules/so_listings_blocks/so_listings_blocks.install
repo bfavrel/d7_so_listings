@@ -1,0 +1,57 @@
+<?php
+
+function so_listings_blocks_install() {
+    
+    $existing_types = node_type_get_types();
+    
+    if(!isset($existing_types['listing_block'])) {
+        $content_type_type = 'listing_block';
+
+        $content_type = array(
+            'type' => $content_type_type,
+            'name' => "Listing Block",
+            'base' => 'node_content',
+            'description' => "A node type which display a predefined listing of nodes, and intended to be first displayed in a block.",
+            'custom' => true,
+            'locked' => true,
+            'module' => 'so_listings'
+        );
+
+        $content_type = node_type_set_defaults($content_type);
+
+        node_type_save($content_type);
+
+        variable_set('additional_settings__active_tab_' . $content_type_type, 'edit-menu');
+
+        variable_set('node_preview_' . $content_type_type, 1); // facultatif
+        variable_set('node_options_' . $content_type_type, array(0 => 'status'));
+        variable_set('node_submitted_' . $content_type_type, 0); // user et date de soumission : off
+
+        variable_set('comment_' . $content_type_type, 0); // pas de commentaires
+
+        variable_set('menu_parent_' . $content_type_type, 'main-menu:0');
+        variable_set('menu_options_' . $content_type_type, array(0 => 'main-menu'));
+
+        variable_set('language_content_type_' . $content_type_type, 2); // multilingue : activé avec traductions
+
+        variable_set('nodeblock_comment_link_' . $content_type_type, 0);
+        variable_set('nodeblock_' . $content_type_type, 1);
+        variable_set('nodeblock_node_link_' . $content_type_type, 0);
+        variable_set('nodeblock_node_overrides_' . $content_type_type, array('view_mode', 'block_title'));
+        variable_set('nodeblock_view_mode_' . $content_type_type, 'teaser');
+    }
+    
+    $existing_field = field_info_field('field_listing_block');
+    
+    if(empty($existing_field)) {
+        module_load_include('inc', 'so_listings_blocks', 'fields/field_listing_block_definition');
+        field_create_field(get_field_listing_block_definition());
+    }
+    
+    $existing_instance = field_info_instance('node', 'field_listing_block', 'listing_block');
+    
+    if(empty($existing_instance)) {
+        module_load_include('inc', 'so_listings_blocks', 'fields/field_listing_block_instance');
+        field_create_instance(get_field_listing_block_instance());
+    }
+}

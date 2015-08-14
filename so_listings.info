@@ -1,0 +1,7 @@
+name = "Listings"
+description = "Provides tools to create and display nodes listings. Defines the node type 'listing'."
+package = "Saison d'Or"
+core = 7.x
+
+dependencies[] = so_forms
+dependencies[] = date

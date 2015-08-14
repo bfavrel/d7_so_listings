@@ -1,0 +1,215 @@
+<?php
+
+function so_listings_kiosque_menu() {
+
+    $items = array();
+
+    $items['admin/config/so_kiosque/settings/so_listings_kiosque'] = array(
+        'title' => "SO Listings",
+        'description' => "SO Listings kiosque settings",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_kiosque_settings_form'),
+        'access arguments' => array('configure so_listings'),
+        'weight' => 1,
+    );
+
+    return $items;
+}
+
+function so_listings_kiosque_settings_form($form, &$form_state) {
+
+    $settings = variable_get('so_listings_kiosque_settings', array(
+        'preset' => 'default',
+        'node_delay' => 3000,
+    ));
+
+    $presets = so_listings_get_presets();
+    $presets_options = array();
+
+    foreach($presets as $preset) {
+        $presets_options[$preset->id] = $preset->label;
+    }
+
+    $form = array(
+
+        'preset' => array(
+            '#type' => 'select',
+            '#title' => t("Preset to use for listings"),
+            '#options' => $presets_options,
+            '#default_value' => $settings['preset'],
+        ),
+
+        'node_delay' => array(
+            '#type' => 'textfield',
+            '#title' => t("Display time by node"),
+            '#description' => t("in milliseconds"),
+            '#default_value' => $settings['node_delay'],
+            '#size' => 6,
+            '#required' => true,
+        ),
+
+        'save' => array(
+            '#type' => 'submit',
+            '#value' => t("Save"),
+        ),
+    );
+
+    return $form;
+}
+
+function so_listings_kiosque_settings_form_submit($form, &$form_state) {
+
+    $settings = array(
+        'preset' => $form_state['values']['preset'],
+        'node_delay' => $form_state['values']['node_delay'],
+    );
+
+    variable_set('so_listings_kiosque_settings', $settings);
+
+    drupal_set_message(t("Settings have been saved."));
+}
+
+/*
+ * Implementation of hook_kiosque_actor_type()
+ */
+function so_listings_kiosque_kiosque_actor_type() {
+    return array(
+        'listing' => array(
+            'label' => t("Listing"),
+        ),
+    );
+}
+
+/*
+ * Implementation of hook_kiosque_actor_configure()
+ */
+function so_listings_kiosque_kiosque_actor_configure($type, $configuration, $context, $touch = false) {
+
+    if($touch == true && array_key_exists($type, so_listings_kiosque_kiosque_actor_type())) {
+        if($context == 'casting') {
+            return true;
+        }
+    }
+
+    $listings = so_listings_get_listings_definitions();
+
+    $listing_options = array();
+
+    foreach($listings as $listing) {
+        $listing_options[$listing->id] = $listing->name;
+    }
+
+    $form = array(
+        'lid' => array(
+            '#type' => 'select',
+            '#title' => t("Listing to display"),
+            '#options' => $listing_options,
+            '#default_value' => $configuration['lid'],
+        ),
+
+        'title' => array(
+            '#type' => 'textfield',
+            '#title' => t("Page title to display"),
+            '#description' => t("If left empty, listing title will be used instead."),
+            '#default_value' => $configuration['title'],
+        ),
+
+        'dispos' => array(),
+    );
+
+    if(module_exists('prestataires_dispos')) {
+
+        $form['dispos'] = array(
+            '#type' => 'checkbox',
+            '#title' => t("Show only items which have availabilities"),
+            '#default_value' => $configuration['dispos'],
+        );
+    }
+
+    return $form;
+}
+
+/*
+ * Implementation of hook_kiosque_actor_content()
+ */
+function so_listings_kiosque_kiosque_actor_content(&$content, &$title, $type, $configuration, &$params, &$storage) {
+
+    if(!array_key_exists($type, so_listings_kiosque_kiosque_actor_type())) {return;}
+
+    $settings = variable_get('so_listings_kiosque_settings', array());
+
+    if(!empty($configuration['title'])) {
+        $title = $configuration['title'];
+    } else {
+        $listing_definition = so_listings_get_listings_definitions($configuration['lid']);
+        $title = $listing_definition->title;
+    }
+
+    if(!empty($storage)) {
+        $current_page = $storage['num_pages'] - $params['calls'];
+    } else {
+        $current_page = 0;
+    }
+
+    $options = array(
+        'page' => $current_page,
+    );
+
+    $query = so_listings_init_query();
+    $data = array();
+
+    if(module_exists('prestataires_dispos') && $configuration['dispos'] == true) {
+
+        $today = DateTime::createFromFormat('U', time());
+        $today->setTimezone(new DateTimeZone("Europe/Paris"));
+
+        $values = array(
+            'from' => $today->format('Y-m-d'),
+            'to' => $today->format('Y-m-d'),
+        );
+
+        $dispos_configuration = array(
+            'capacity' => 0,
+            'accuracy' => 1, // que des jours valides consécutifs sur l'ensemble de la période
+            'shift_dates' => array(
+                'start' => null,
+                'end' => null,
+            ),
+            'undefined_mode' => 0, // 'undefined' is not a valid dispo
+            'debug_mode' => 0,
+        );
+
+        prestataires_dispos_build_so_listing_search_query($values, $dispos_configuration, $query, $data);
+
+        $options += array(
+            'context' => 'pdispos_search',
+            'prestataires_dispos' => $data,
+        );
+    }
+
+    $listing = so_listings_listing($configuration['lid'], $settings['preset'], $options, $query);
+
+    $num_nodes = count($listing['nodes']);
+
+    if($num_nodes == 0) {
+        $params['calls'] = 0;
+        return;
+    } else {
+        $params['delay'] = $num_nodes * $settings['node_delay'];
+    }
+
+    if(empty($storage)) {
+        global $pager_total;
+
+        $storage['num_pages'] = $pager_total[$listing['infos']['listing_index']];
+        $params['calls'] = $storage['num_pages'];
+
+    } else {
+        // on positionne artificiellement le pager, qui, convenablement thémé, pourra servir d'afficheur.
+        global $pager_page_array;
+        $pager_page_array[$listing['infos']['listing_index']] = $current_page;
+    }
+
+    $content = so_listings_build($listing, 'so_listing');
+}

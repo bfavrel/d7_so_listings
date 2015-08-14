@@ -1,0 +1,7 @@
+name = "Listing Kiosque"
+description = "Provides a listing actor type to Kiosque module."
+package = "Saison d'Or"
+core = 7.x
+
+dependencies[] = so_listings
+dependencies[] = so_kiosque

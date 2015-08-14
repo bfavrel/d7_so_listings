@@ -1,0 +1,390 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function so_listings_install() {
+
+    //--- node type 'listing'
+
+    $existing_types = node_type_get_types();
+
+    if(!isset($existing_types['listing'])) {
+
+        $content_type_type = 'listing';
+
+        $content_type = array(
+            'type' => $content_type_type,
+            'name' => "Listing",
+            'base' => 'node_content',
+            'description' => "A node type which display a predefined listing of nodes.",
+            'custom' => true,
+            'locked' => true,
+            'module' => 'so_listings'
+        );
+
+        $content_type = node_type_set_defaults($content_type);
+        node_add_body_field($content_type);
+
+        node_type_save($content_type);
+
+        variable_set('additional_settings__active_tab_' . $content_type_type, 'edit-menu');
+
+        variable_set('node_preview_' . $content_type_type, 1); // facultatif
+        variable_set('node_options_' . $content_type_type, array(0 => 'status'));
+        variable_set('node_submitted_' . $content_type_type, 0); // user et date de soumission : off
+
+        variable_set('comment_' . $content_type_type, 0); // pas de commentaires
+
+        variable_set('menu_parent_' . $content_type_type, 'main-menu:0');
+        variable_set('menu_options_' . $content_type_type, array(0 => 'main-menu'));
+
+        variable_set('language_content_type_' . $content_type_type, 2); // multilingue : activé avec traductions
+    }
+
+    field_cache_clear();
+
+    $existing_field = field_info_field('field_listing_node');
+
+    if(empty($existing_field)) {
+        module_load_include('inc', 'so_listings', 'fields/field_listing_node_definition');
+        field_create_field(get_field_listing_node_definition());
+    }
+
+    $existing_instance = field_info_instance('node', 'field_listing_node', 'listing');
+
+    if(empty($existing_instance)) {
+        module_load_include('inc', 'so_listings', 'fields/field_listing_node_instance');
+        field_create_instance(get_field_listing_node_instance());
+    }
+
+    $existing_field = field_info_field('field_listing_parent');
+
+    if(empty($existing_field)) {
+        module_load_include('inc', 'so_listings', 'fields/field_listing_parent_definition');
+        field_create_field(get_field_listing_parent_definition());
+    }
+
+    $existing_instance = field_info_instance('node', 'field_listing_parent', 'listing');
+
+    if(empty($existing_instance)) {
+        module_load_include('inc', 'so_listings', 'fields/field_listing_parent_instance');
+        field_create_instance(get_field_listing_parent_instance());
+    }
+
+    //--- default preset
+    $params = array(
+        'limit_num' => 10,
+        'limit_to' => 0,
+        'search' => true,
+
+        'so_listings' => array(
+            'search_form' => true,
+            'listing' => true,
+            'listing_display_type' => 'default',
+            'nodes_view_mode' => 'teaser',
+            'title' => false,
+            'pager' => true,
+        ),
+    );
+
+    db_insert('so_listings_presets')->fields(array(
+        'id' => 'default',
+        'label' => "Default",
+        'description' => "A basic listing with pagination (10 nodes by page)",
+        'params' => serialize($params),
+    ))->execute();
+}
+
+/**
+ * Implements hook_schema().
+ */
+function so_listings_schema() {
+
+    $schema['so_listings'] = array(
+        'description' => "Store defined listings",
+
+        'fields' => array(
+            'id' => array(
+				'type' => 'serial',
+				'not null' => true,
+                'unsigned' => true,
+				'description' => "The listing's id. Primary key.",
+			),
+            'name' => array(
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => true,
+				'description' => "The human readable listing's name.",
+			),
+            'title' => array(
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => true,
+				'description' => "The listing's title to display.",
+			),
+            'description' => array(
+				'type' => 'text',
+				'not null' => true,
+				'description' => "The listing's description.",
+			),
+            'params' => array(
+				'type' => 'text',
+				'not null' => true,
+				'description' => "The listing's settings.",
+			),
+            'filters' => array(
+				'type' => 'text',
+				'not null' => true,
+				'description' => "The listing's filters' settings.",
+			),
+            // renamed in 7004
+            'sorting' => array(
+				'type' => 'text',
+				'not null' => true,
+				'description' => "The listing's sorting settings.",
+			),
+            'cache' => array(
+				'type' => 'text',
+				'not null' => true,
+				'description' => "The listing's precompiled query fragments cache.",
+			),
+        ),
+        'primary key' => array('id'),
+    );
+
+    $schema['so_listings_presets'] = array(
+        'description' => "Store listings' presets",
+
+        'fields' => array(
+            'id' => array(
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => true,
+				'description' => "The preset's machine name. Primary key.",
+			),
+            'label' => array(
+				'type' => 'text',
+				'size' => 'small',
+				'not null' => true,
+				'description' => "The preset's human readable name.",
+			),
+            'description' => array(
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => true,
+				'description' => "The description of preset's features.",
+			),
+            'params' => array(
+				'type' => 'text',
+				'not null' => true,
+				'description' => "The preset's settings.",
+			),
+        ),
+        'primary key' => array('id'),
+    );
+
+    // created in 7001
+    // updated in 7002
+    $schema['so_listings_map'] = array(
+        'description' => "Store matches between nids and listing",
+
+        'fields' => array(
+            'nid' => array(
+                'type' => 'int',
+                'not null' => true,
+                'unsigned' => true,
+                'description' => "The node's id.",
+            ),
+            'lid' => array(
+                'type' => 'varchar',
+                'length' => '255',
+                'not null' => false,
+                'description' => "The listing's id.",
+            ),
+        ),
+
+        'primary key' => array('nid', 'lid'), // 'lid' added in 7002
+    );
+
+    // created in 7003
+    $schema['so_listings_view_modes'] = array(
+        'description' => "",
+
+        'fields' => array(
+            'nid' => array(
+                'description' => 'Primary Key',
+                'type' => 'int',
+                'unsigned' => true,
+                'not null' => true,
+                'default' => 0,
+            ),
+            'config' => array(
+				'type' => 'text',
+				'size' => 'small',
+				'not null' => true,
+				'description' => "The VM config",
+			),
+        ),
+
+        'primary key' => array('nid'),
+    );
+
+    return $schema;
+}
+
+function so_listings_field_schema($field) {
+
+    switch($field['type']) {
+        case 'listing_type':
+
+            $columns = array(
+                'columns' => array(
+                    'lid' => array(
+                        'type' => 'varchar',
+                        'length' => '255',
+                        'not null' => false,
+                        'description' => "The listing's id.",
+                    ),
+                    'presets' => array(
+                        'type' => 'varchar',
+                        'length' => '255',
+                        'not null' => true,
+                        'description' => "Available presets for this listing.",
+                    ),
+                ),
+            );
+
+            break;
+    }
+
+    return $columns;
+}
+
+/**
+ * Adding table 'so_listings_map'.
+ */
+function so_listings_update_7001() {
+
+    $schema['so_listings_map'] = array(
+        'description' => "Store matches between ",
+
+        'fields' => array(
+            'nid' => array(
+                'type' => 'int',
+                'not null' => true,
+                'unsigned' => true,
+                'description' => "The node's id.",
+            ),
+            'lid' => array(
+                'type' => 'varchar',
+                'length' => '255',
+                'not null' => false,
+                'description' => "The listing's id.",
+            ),
+        ),
+
+        'primary key' => array('nid'),
+    );
+
+    db_create_table('so_listings_map', $schema['so_listings_map']);
+
+    return t("The table 'so_listings_map' has been created");
+}
+
+/**
+ * Altering 'so_listings_map' index.
+ */
+function so_listings_update_7002() {
+    db_drop_primary_key('so_listings_map');
+    db_add_primary_key('so_listings_map', array('nid', 'lid'));
+
+    return t("The table 'so_listings_map' has been modified");
+}
+
+/**
+ * Adding table 'so_listings_view_modes'.
+ */
+function so_listings_update_7003() {
+
+    $schema['so_listings_view_modes'] = array(
+        'description' => "",
+
+        'fields' => array(
+            'nid' => array(
+                'description' => 'Primary Key',
+                'type' => 'int',
+                'unsigned' => true,
+                'not null' => true,
+                'default' => 0,
+            ),
+            'config' => array(
+				'type' => 'text',
+				'size' => 'small',
+				'not null' => true,
+				'description' => "The VM config",
+			),
+        ),
+
+        'primary key' => array('nid'),
+    );
+
+    db_create_table('so_listings_view_modes', $schema['so_listings_view_modes']);
+
+    return t("The table 'so_listings_view_modes' has been created");
+}
+
+/**
+ * Rename column {so_listings}.sorts to {so_listings}.sorting
+ */
+function so_listings_update_7004() {
+
+    $spec = array(
+        'type' => 'text',
+        'not null' => true,
+        'description' => "The listing's sorting settings.",
+    );
+
+    db_change_field('so_listings', 'sorts', 'sorting', $spec);
+
+    return t("The column 'sorts' has been renamed to 'sorting'");
+}
+
+/**
+ * Initialization of new parameter 'include_paths' for search forms.
+ * (for forms and for fields)
+ */
+function so_listings_update_7005() {
+
+    $results = db_query("SELECT * FROM {so_forms} WHERE sfid LIKE 'so_listings:%'");
+
+    while($row = $results->fetchObject()) {
+        $row->params = unserialize($row->params);
+        $row->params['configuration']['include_paths'] = array(
+            array(
+                'module' => 'so_listings',
+                'script' => 'so_listings.search',
+            ),
+        );
+        $row->params = serialize($row->params);
+
+        drupal_write_record('so_forms', $row, 'sfid');
+    }
+
+    $results = db_query("SELECT * FROM {so_forms_fields} WHERE sfid LIKE 'so_listings:%'");
+
+    while($row = $results->fetchObject()) {
+        $row->params = unserialize($row->params);
+        $row->params['include_paths'] = array(
+            array(
+                'module' => 'so_listings',
+                'script' => 'so_listings.search',
+            ),
+        );
+        $row->params = serialize($row->params);
+
+        drupal_write_record('so_forms_fields', $row, 'id');
+    }
+
+    return "New param has been set.";
+}

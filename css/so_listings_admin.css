@@ -1,0 +1,119 @@
+
+.overview_empty_msg {
+    padding: 10px 0;
+    margin-bottom: 5px;
+    border: 1px solid #cccccc;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    background-color: #f0f0e8;
+}
+
+/* ----- VIEW MODES */
+
+/* -- config */
+form#so-listings-view-modes-form div.form-type-select span.field-suffix {
+    vertical-align: bottom;
+}
+
+/* -- nodes overview */
+
+#so-listings-view-modes-node-admin-content-form {
+    display: none;
+    float: left;
+    padding: 5px;
+    position: absolute;
+    border: 1px solid #d0d0c0;
+    border-radius: 3px;
+    background-color: #e3e4de;
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.3);
+}
+
+#so-listings-view-modes-node-admin-content-form div.ajax-progress-throbber {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+}
+
+#so-listings-view-modes-node-admin-content-form .form-type-radios {
+    padding: 0;
+    margin: 0;
+}
+
+#so-listings-view-modes-node-admin-content-form .form-type-radios label img {
+    padding-right: 4px;
+    vertical-align: -3px;
+}
+
+img.node_admin_content_vm_picto {
+    cursor: pointer;
+}
+
+/* ----- FILTERS */
+
+form.so_listing_filters span.tabledrag-changed {
+    display: none;
+}
+
+form.so_listing_filters div.filters_clause {
+    float: left;
+}
+
+form.so_listing_filters div.filters_clause table {
+    margin: 0;
+    border: none;
+}
+
+form.so_listing_filters div.filters_clause table tr {
+    border: none;
+    background-color: transparent;
+}
+
+form.so_listing_filters div.filters_clause table tr td {
+    border: none;
+    vertical-align: top;
+}
+
+form.so_listing_filters .so_listing_filters_clause {}
+
+form.so_listing_filters .so_listing_filters_group {
+    background-color: #dde0dd;
+}
+
+form.so_listing_filters table.filters_clauses_overview tr.so_listing_filters_clause:first-child .filters_clause_mode,
+form.so_listing_filters table.filters_clauses_overview tr.so_listing_filters_group:first-child .filters_clause_mode,
+form.so_listing_filters .so_listing_filters_group + .so_listing_filters_clause .filters_clause_mode {
+    visibility: hidden;
+}
+
+form.so_listing_filters table.filters_clauses_overview td table td {
+    padding-left: 0;
+}
+
+form.so_listing_filters table.filters_clauses_overview td table td .clause_label {
+    padding-right: 20px;
+    font-weight: bold;
+    font-size: 9pt;
+}
+
+form.so_listing_filters .clause_args_cols div.args_col {
+    float: left;
+    padding: 0 10px 0 0;
+}
+
+/* ----- SORTING */
+
+form#so-listings-sorting-edit-clause-form div#sol_sorting_fields_helper_wrapper {
+    padding: 5px;
+    border: 1px solid #cccccc;
+}
+
+form#so-listings-sorting-edit-clause-form div#sol_sorting_fields_helper_wrapper div#sol_sorting_fields_helper span {
+    font-weight: bold;
+}
+
+form#so-listings-sorting-edit-clause-form div#sol_sorting_fields_helper_wrapper div#sol_sorting_fields_helper div#fields_helper_values_wrapper {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #cccccc;
+}

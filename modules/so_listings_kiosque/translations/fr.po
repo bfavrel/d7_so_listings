@@ -1,0 +1,80 @@
+# $Id$
+#
+# French translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  so_listings_kiosque.module: n/a
+#  so_listings_kiosque.info: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2014-06-11 14:38+0200\n"
+"PO-Revision-Date: 2014-06-11 14:43+0100\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: French <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"X-Generator: Poedit 1.5.4\n"
+
+#: so_listings_kiosque.module:38
+msgid "Preset to use for listings"
+msgstr "Preset à utiliser pour les listings"
+
+#: so_listings_kiosque.module:45
+msgid "Display time by node"
+msgstr "Temps d'affichage par node"
+
+#: so_listings_kiosque.module:46
+msgid "in milliseconds"
+msgstr "en millisecondes"
+
+#: so_listings_kiosque.module:54
+msgid "Save"
+msgstr "Enregistrer"
+
+#: so_listings_kiosque.module:70
+msgid "Settings have been saved."
+msgstr "Les paramètres ont été sauvegardés."
+
+#: so_listings_kiosque.module:79
+msgid "Listing"
+msgstr "Listing"
+
+#: so_listings_kiosque.module:106
+msgid "Listing to display"
+msgstr "Listing a afficher"
+
+#: so_listings_kiosque.module:113
+msgid "Page title to display"
+msgstr "Titre de page à afficher"
+
+#: so_listings_kiosque.module:114
+msgid "If left empty, listing title will be used instead."
+msgstr "Si vide, le titre du listing sera utilisé."
+
+#: so_listings_kiosque.module:125
+msgid "Show only items which have availabilities"
+msgstr "Ne montrer que les fiches qui ont des disponibilités"
+
+#: so_listings_kiosque.module:8
+msgid "SO Listings"
+msgstr "SO Listings"
+
+#: so_listings_kiosque.module:9
+msgid "SO Listings kiosque settings"
+msgstr "Configuration de SO Listings Kiosque"
+
+#: so_listings_kiosque.info:0
+msgid "Listing Kiosque"
+msgstr "Listing Kiosque"
+
+#: so_listings_kiosque.info:0
+msgid "Provides a listing actor type to Kiosque module."
+msgstr "Fourni un acteur de type 'Listing' au module Kiosque."
+
+#: so_listings_kiosque.info:0
+msgid "Saison d'Or"
+msgstr ""
