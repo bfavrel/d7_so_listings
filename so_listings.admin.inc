@@ -825,14 +825,113 @@ function so_listings_delete_preset_confirm_submit($form, &$form_state) {
     drupal_goto();
 }
 
-function so_listings_overview() {
+function so_listings_overview_form($form, &$form_state) {
 
-    $overview = array(
-        '#type' => 'container',
-        '#attributes' => array(), // bug D7 connu
-        '#theme' => 'so_listings_overview',
+    if(array_key_exists('values', $form_state)) {
+
+        $default_values = $form_state['values']['filters'];
+
+    } elseif(array_key_exists('so_listings_overview_filters', $_SESSION)) {
+
+        $default_values = $_SESSION['so_listings_overview_filters'];
+
+    } else {
+        $default_values = array();
+    }
+
+    $names_results = db_query("SELECT DISTINCT name FROM {so_listings} ORDER BY name");
+
+    $prefixes_options = array(
+        '' => "- " . t("All") . " -",
+        'no_prefix' => "- " . t("Without prefix") . " -",
+    );
+
+    while($name = $names_results->fetchColumn()) {
+
+        $matches = array();
+        preg_match("#^\[[^\]]+\]#", $name, $matches);
+
+        if(empty($matches[0])) {continue;}
+
+        $prefixes_options[$matches[0]] = $matches[0];
+    }
+
+    $form = array(
+        '#tree' => true,
         '#attached' => array(
             'css' => array(drupal_get_path('module', 'so_listings') . '/css/so_listings_admin.css')
+        ),
+
+        'filters' => array(
+            '#type' => 'fieldset',
+            '#title' => t("Filters"),
+            '#attributes' => array('class' => array('so_listings_overview_filter')),
+            '#collapsible' => true,
+            '#collapsed' => !empty($default_values) ? false: true,
+
+            'prefix' => array(
+                '#type' => 'select',
+                '#title' => t("By prefix"),
+                '#options' => $prefixes_options,
+                '#default_value' => array_key_exists('prefix', $default_values) ? $default_values['prefix'] : '',
+            ),
+
+            'tags' => array(
+                '#type' => 'textfield',
+                '#title' => t("By tags"),
+                '#autocomplete_path' => 'admin/structure/so_listings/autocomplete/tags',
+                '#description' => t("Keywords separated by commas."),
+                '#default_value' => array_key_exists('tags', $default_values) ? $default_values['tags'] : '',
+                '#size' => 40,
+            ),
+
+            'tags_mode' => array(
+                '#type' => 'select',
+                '#title' => t("Tag filtering mode"),
+                '#options' => array(
+                    'AND' => t("All tags"),
+                    'OR' => t("At least one tag"),
+                ),
+                '#default_value' => array_key_exists('tags_mode', $default_values) ? $default_values['tags_mode'] : '',
+            ),
+
+            'name' => array(
+                '#type' => 'textfield',
+                '#title' => t("By name"),
+                '#autocomplete_path' => 'admin/structure/so_listings/autocomplete/name',
+                '#default_value' => array_key_exists('name', $default_values) ? $default_values['name'] : '',
+                '#size' => 40,
+            ),
+
+            'persistent' => array(
+                '#type' => 'checkbox',
+                '#title' => t("Keep these values permanently"),
+                '#default_value' => array_key_exists('persistent', $default_values) ? $default_values['persistent'] : '',
+            ),
+
+            'actions' => array(
+                '#type' => 'actions',
+                '#parents' => array(),
+                '#id' => 'actions',
+
+                'reset' => !empty($default_values) ?
+                    array(
+                        '#type' => 'submit',
+                        '#value' => t("Reset"),
+                    )
+                : array(),
+
+                'submit' => array(
+                    '#type' => 'submit',
+                    '#value' => t("Filter"),
+                ),
+            ),
+        ),
+
+        'overview' => array(
+            '#type' => 'container',
+            '#attributes' => array(), // bug D7 connu
+            '#theme' => 'so_listings_overview',
         ),
     );
 
@@ -854,18 +953,69 @@ function so_listings_overview() {
         );
 
         while($row = $nodes_results->fetchObject()) {
-            $usages[$row->lid][] = l("[" . $row->language . "] " . $row->title, drupal_get_path_alias('node/' . $row->nid), array('attributes' => array('target' => '_blank')));
+            $usages[$row->lid][] = l("(" . $row->language . ") " . $row->title, drupal_get_path_alias('node/' . $row->nid), array('attributes' => array('target' => '_blank')));
         }
     }
 
-    $listings = so_listings_get_listings_definitions();
+    $where = array();
+    $join = "";
+    $group_by = "";
+    $args = array();
+
+    if(array_key_exists('prefix', $default_values) && !empty($default_values['prefix'])) {
+
+        if($default_values['prefix'] == 'no_prefix') {
+            $where[] = "name NOT LIKE :prefix";
+            $args[':prefix'] = "[%]%";
+        } else {
+            $where[] = "name LIKE :prefix";
+            $args[':prefix'] = db_like($default_values['prefix']) . "%";
+        }
+    }
+
+    if(array_key_exists('tags', $default_values) && !empty($default_values['tags'])) {
+
+        $join = " LEFT JOIN {so_listings_tags AS t ON t.lid=sol.id} ";
+
+        $tags = drupal_explode_tags($default_values['tags']);
+
+        $where[] = "t.tag IN (:tags)";
+        $args[':tags'] = $tags;
+
+        if($default_values['tags_mode'] == 'AND') {
+
+            $group_by = " GROUP BY sol.id HAVING COUNT(t.tag)=:count ";
+            $args[':count'] = count($tags);
+        }
+    }
+
+    if(array_key_exists('name', $default_values) && !empty($default_values['name'])) {
+
+        $where[] = "name LIKE :name";
+        $args[':name'] = "%" . db_like($default_values['name']) . "%";
+    }
+
+    if(!empty($where)) {
+
+        $lid_results = db_query("SELECT sol.id FROM {so_listings} AS sol " . $join . " WHERE " . implode(" AND ", $where) . $group_by . " ORDER BY sol.name ASC", $args);
+
+        $listings = array();
+
+        while($lid = $lid_results->fetchColumn()) {
+            $listings[$lid] = so_listings_get_listings_definitions($lid, true);
+        }
+
+    } else {
+        $listings = so_listings_get_listings_definitions(null, true);
+    }
 
     foreach($listings as $id => $listing) {
 
-        $overview[$id] = array(
+        $form['overview'][$id] = array(
             'name' => array('#markup' => $listing->name),
+            'tags' => !empty($listing->tags) ? array('#markup' => " <img class='so_listings_tags' src='" . base_path() . "misc/help.png' title='" . t("Tags") . " : " . htmlentities($listing->tags, ENT_QUOTES) . "' />") : "",
             'description' => array('#markup' => $listing->description),
-            'usages' => array_key_exists($listing->id, $usages) ? implode('<br />', $usages[$listing->id]) : '',
+            'usages' => array_key_exists($listing->id, $usages) ? array('#markup' => implode('<br />', $usages[$listing->id])) : array(),
             'operations' => array(
                 'edit' => array('#markup' => l(t("edit"), 'admin/structure/so_listings/edit/' . $listing->id)),
                 'delete' => array('#markup' => l(t("delete"), 'admin/structure/so_listings/delete/' . $listing->id, array('query' => drupal_get_destination()))),
@@ -873,7 +1023,29 @@ function so_listings_overview() {
         );
     }
 
-    return $overview;
+    return $form;
+}
+
+function so_listings_overview_form_submit($form, &$form_state) {
+
+        if(array_pop($form_state['triggering_element']['#parents']) == 'submit') {
+
+            $filters = $form_state['values']['filters'];
+
+            if($filters['persistent'] == true) {
+                $_SESSION['so_listings_overview_filters'] = $filters;
+            } elseif(array_key_exists('so_listings_overview_filters', $_SESSION)) {
+                unset($_SESSION['so_listings_overview_filters']);
+            }
+
+            $form_state['rebuild'] = true;
+
+        } else {
+
+            if(array_key_exists('so_listings_overview_filters', $_SESSION)) {
+                unset($_SESSION['so_listings_overview_filters']);
+            }
+        }
 }
 
 function so_listings_delete_confirm($form, &$form_state, $lid) {
@@ -974,6 +1146,7 @@ function so_listings_create_form_submit($form, &$form_state) {
     $definition = array(
         'name' => $form_state['values']['name'],
         'title' => $form_state['values']['title'],
+        'tags' => $form_state['values']['tags'],
         'description' => $form_state['values']['description'],
 
         'params' => array(
@@ -990,6 +1163,7 @@ function so_listings_create_form_submit($form, &$form_state) {
             'sorting' => array_fill_keys(array_keys(so_listings_get_contexts()), 'so_listings_default'),
         ),
         'cache' => array(
+            'tags_hash' => "",
             'filters' => array(),
             'sorting' => array_fill_keys(array_keys(so_listings_get_contexts()), 'so_listings_default'),
         ),
@@ -1027,7 +1201,7 @@ function so_listings_create_form_submit($form, &$form_state) {
 
 function so_listings_edit_form($form, &$form_state, $lid) {
 
-    $definition = so_listings_get_listings_definitions($lid);
+    $definition = so_listings_get_listings_definitions($lid, true);
 
     drupal_set_title(t("Edit listing '@listing'", array('@listing' => $definition->name)));
 
@@ -1072,6 +1246,7 @@ function so_listings_edit_form_submit($form, &$form_state) {
         'id' => $form_state['build_info']['args'][0],
         'name' => $form_state['values']['name'],
         'title' => $form_state['values']['title'],
+        'tags' => $form_state['values']['tags'],
         'description' => $form_state['values']['description'],
         'params' => array_merge($existing->params, array(
             'sources' => $sources,
@@ -1101,9 +1276,10 @@ function so_listings_params_form_elements(&$form, &$form_state, $listing_definit
     $form['name'] = array(
         '#type' => 'textfield',
         '#title' => t("Name"),
-        '#description' => t("Only displayed in listings overviews and in selectbox of widget."),
+        '#description' => t("Only displayed in listings overviews and in selectbox of widget.") . "<br />" .
+                          t("Name can be prefixed with a short value between braces (usually its language), in order to facilitate sorting and filtering in overview. Ex : \"[fr] Hôtels\""),
         '#required' => true,
-        '#default_value' => $listing_definition['name'],
+        '#default_value' => !empty($listing_definition) ? $listing_definition['name'] : "",
         '#weight' => 10,
     );
 
@@ -1112,14 +1288,23 @@ function so_listings_params_form_elements(&$form, &$form_state, $listing_definit
         '#title' => t("Title"),
         '#description' => t("Optionally displayed in rendered widget."),
         '#required' => true,
-        '#default_value' => $listing_definition['title'],
-        '#weight' => 10,
+        '#default_value' => !empty($listing_definition) ? $listing_definition['title'] : "",
+        '#weight' => 11,
+    );
+
+    $form['tags'] = array(
+        '#type' => 'textfield',
+        '#title' => t("Tags"),
+        '#description' => t("Keywords separated by commas.") . " " . t("If a keyword contains itself a comma, it must be surrounded by double quotes."),
+        '#autocomplete_path' => 'admin/structure/so_listings/autocomplete/tags',
+        '#default_value' => !empty($listing_definition) ? $listing_definition['tags'] : "",
+        '#weight' => 12,
     );
 
     $form['description'] = array(
         '#type' => 'textarea',
         '#title' => t("Description"),
-        '#default_value' => $listing_definition['description'],
+        '#default_value' => !empty($listing_definition) ? $listing_definition['description'] : "",
         '#weight' => 40,
     );
 
@@ -1128,7 +1313,7 @@ function so_listings_params_form_elements(&$form, &$form_state, $listing_definit
         '#type' => 'checkbox',
         '#title' => t("Parent listing"),
         '#description' => t("If checked, listing's nodes will be tied with this listing, even if they exist in another one."),
-        '#default_value' => $listing_definition['params']['listing_parent'],
+        '#default_value' => !empty($listing_definition) ? $listing_definition['params']['listing_parent'] : 0,
         '#weight' => 45,
     );
 
@@ -1187,5 +1372,34 @@ function so_listings_params_form_elements(&$form, &$form_state, $listing_definit
 
         $form['modules_settings'][$module] += (array)$elements;
     }
+}
 
+function so_listings_tags_autocomplete($string) {
+
+    $output = array();
+
+    $tags = drupal_explode_tags($string);
+    $term = trim(array_pop($tags));
+    $previous_terms = drupal_implode_tags($tags) . (!empty($tags) ? ", " : "");
+
+    $results = db_query("SELECT tag FROM {so_listings_tags} WHERE tag LIKE ? ORDER BY tag ASC", array("%" . db_like($term) . "%"));
+
+    while($tag = $results->fetchColumn()) {
+        $output[$previous_terms . (strpos($tag, ',') === false ? $tag : '"' . $tag . '"')] = $tag;
+    }
+
+    drupal_json_output($output);
+}
+
+function so_listings_name_autocomplete($string) {
+
+    $output = array();
+
+    $results = db_query("SELECT name FROM {so_listings} WHERE name LIKE ? ORDER BY name ASC", array("%" . db_like($string) . "%"));
+
+    while($name = $results->fetchColumn()) {
+        $output[$name] = $name;
+    }
+
+    drupal_json_output($output);
 }

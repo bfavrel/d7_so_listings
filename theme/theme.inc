@@ -332,7 +332,7 @@ function theme_so_listings_overview($vars) {
 
     foreach($listings as $listing) {
         $rows[] = array(
-            render($element[$listing]['name']),
+            render($element[$listing]['name']) . render($element[$listing]['tags']),
             render($element[$listing]['description']),
             render($element[$listing]['usages']),
             render($element[$listing]['operations']['edit']) . " " . render($element[$listing]['operations']['delete']),
@@ -340,7 +340,7 @@ function theme_so_listings_overview($vars) {
     }
 
     $headers = array(
-        t("Name"),
+        t("Name") . " (<img class='so_listings_tags' src='" . base_path() . "misc/help.png' /> = " . t("tags list") . ")",
         t("Description"),
         t("Usages"),
         t("Operations"),

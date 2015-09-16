@@ -144,7 +144,8 @@ function so_listings_menu() {
         'title' => "Listings",
         'description' => "Create and configure listings.",
         'type' => MENU_NORMAL_ITEM,
-        'page callback' => 'so_listings_overview',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_overview_form'),
         'file' => 'so_listings.admin.inc',
         'access arguments' => array('administer so_listings'),
     );
@@ -173,6 +174,14 @@ function so_listings_menu() {
         'access arguments' => array('administer so_listings'),
     );
 
+    //--- Name AJAX autocomplete
+    $items['admin/structure/so_listings/autocomplete/name'] = array(
+        'type' => MENU_CALLBACK,
+        'page callback' => 'so_listings_name_autocomplete',
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('administer so_listings'),
+    );
+
     // ----- EDITION -----
 
     //--- params
@@ -190,6 +199,14 @@ function so_listings_menu() {
         'type' => MENU_DEFAULT_LOCAL_TASK,
         'access arguments' => array('administer so_listings'),
         'weight' => 1,
+    );
+
+    //--- Tags AJAX autocomplete
+    $items['admin/structure/so_listings/autocomplete/tags'] = array(
+        'type' => MENU_CALLBACK,
+        'page callback' => 'so_listings_tags_autocomplete',
+        'file' => 'so_listings.admin.inc',
+        'access arguments' => array('administer so_listings'),
     );
 
     //--- filters
@@ -734,10 +751,11 @@ function so_listings_language_list() {
  * If $id is not provided, whole definitions will be returned.
  *
  * @param int $id
+ * @param boolean $tags : should we add the 'tags' property to the definition ?
  *
  * @return mixed : array of stdClass indexed by 'id', or single stdClass if $id is provided
  */
-function so_listings_get_listings_definitions($id = null) {
+function so_listings_get_listings_definitions($id = null, $tags = false) {
 
     // TODO : étudier la possibilité d'une mise en cache statique
 
@@ -761,6 +779,10 @@ function so_listings_get_listings_definitions($id = null) {
         $row->cache = unserialize($row->cache);
 
         $listings[$row->id] = $row;
+
+        if($tags == true) {
+            $listings[$row->id]->tags = so_listings_get_tags($row->id, true);
+        }
     }
 
     if (!empty($id)) {
@@ -794,6 +816,7 @@ function so_listings_get_contexts($filtered = true) {
  * @param array or stdClass &$listing_definition : whole or partial listing definition which will be possibly merged with an existing one.
  *                                         In case of new listing, $definition will contains the newly created id.
  *
+ *
  * @return boolean : if data sources have changed or not
  */
 function so_listings_save_listing_definition(&$listing_definition) {
@@ -811,17 +834,21 @@ function so_listings_save_listing_definition(&$listing_definition) {
 
         if(!empty($existing)) {
             if(array_key_exists('params', $definition)) {
-                $sources_have_changed = $definition['params']['sources'] != $existing['params']['sources'];
-                $listing_has_changed = $listing_has_changed || $sources_have_changed;
+                $sources_have_changed = ($definition['params']['sources'] != $existing['params']['sources']);
+                $listing_has_changed = ($listing_has_changed || $sources_have_changed);
             }
 
             if(array_key_exists('cache', $definition)) {
-                $listing_has_changed = $listing_has_changed || ($definition['cache']['filters']['filters'] != $existing['cache']['filters']['filters']);
+                $listing_has_changed = ($listing_has_changed || ($definition['cache']['filters']['filters'] != $existing['cache']['filters']['filters']));
             }
         }
 
         $definition = array_merge((array)$existing, (array)$definition);
     }
+
+    $tags_hash = md5($definition['tags']);
+    $tags_have_changed = ($tags_hash != $definition['cache']['tags_hash']);
+    $definition['cache']['tags_hash'] = $tags_hash;
 
     $record = array(
         'id' => $definition['id'],
@@ -854,9 +881,56 @@ function so_listings_save_listing_definition(&$listing_definition) {
         module_invoke_all('so_listings_changed', (object)$definition);
     }
 
-    $listing_definition = $record;
+    if($tags_have_changed == true) {
+        so_listings_save_tags($record['id'], $definition['tags']);
+    }
 
     return $sources_have_changed;
+}
+
+/**
+ * Save tags associated to a listing
+ *
+ * @param int $lid
+ * @param string $tags : terms associated to the given listing, separated by comma.
+ *                       Terms with comma are surrounded by double quotes.
+ */
+function so_listings_save_tags($lid, $tags) {
+
+    db_query("DELETE FROM {so_listings_tags} WHERE lid=?", array($lid));
+
+    $tags_array = drupal_explode_tags($tags);
+
+    foreach($tags_array as $tag) {
+
+        db_query("INSERT INTO {so_listings_tags} SET lid=?, tag=?", array($lid, trim($tag)));
+    }
+}
+
+/**
+ * Retrieve the tags of a listing matchin the given id.
+ *
+ * @param int $lid
+ * @param boolean $as_array : if set to 'true' (default), terms are provided as a Drupal valid tags string.
+ *                            If set to 'false', an array of terms is returned.
+ *
+ * @return string (default) or array.
+ */
+function so_listings_get_tags($lid, $as_string = false) {
+
+    $results = db_query("SELECT tag FROM {so_listings_tags} WHERE lid=? ORDER BY tag ASC", array($lid));
+
+    $tags = array();
+
+    while($row = $results->fetchObject()) {
+        $tags[] = $row->tag;
+    }
+
+    if($as_string == true) {
+        $tags = drupal_implode_tags($tags);
+    }
+
+    return $tags;
 }
 
 /**

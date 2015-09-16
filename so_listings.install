@@ -230,6 +230,27 @@ function so_listings_schema() {
         'primary key' => array('nid'),
     );
 
+    // created in 7006
+    $schema['so_listings_tags'] = array(
+        'description' => "",
+
+        'fields' => array(
+            'lid' => array(
+                'type' => 'int',
+                'unsigned' => true,
+                'not null' => true,
+                'description' => "The listing's id.",
+            ),
+            'tag' => array(
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => true,
+				'description' => "The listing's tag.",
+			),
+        ),
+        'primary key' => array('lid', 'tag'),
+    );
+
     return $schema;
 }
 
@@ -387,4 +408,34 @@ function so_listings_update_7005() {
     }
 
     return "New param has been set.";
+}
+
+/**
+ * Adding table 'so_listings_tags'.
+ */
+function so_listings_update_7006() {
+
+    $table = array(
+        'description' => "",
+
+        'fields' => array(
+            'lid' => array(
+                'type' => 'int',
+                'unsigned' => true,
+                'not null' => true,
+                'description' => "The listing's id.",
+            ),
+            'tag' => array(
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => true,
+				'description' => "The listing's tag.",
+			),
+        ),
+        'primary key' => array('lid', 'tag'),
+    );
+
+    db_create_table('so_listings_tags', $table);
+
+    return t("The table 'so_listings_tags' has been created");
 }
