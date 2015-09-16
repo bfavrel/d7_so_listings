@@ -1,3 +1,4 @@
+/* ----- LISTINGS OVERVIEW */
 
 .overview_empty_msg {
     padding: 10px 0;
@@ -7,6 +8,28 @@
     font-weight: bold;
     text-align: center;
     background-color: #f0f0e8;
+}
+
+img.so_listings_tags {
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/* -- filter */
+
+fieldset.so_listings_overview_filter .fieldset-wrapper > div {
+    float: left;
+    margin-right: 15px;
+}
+
+fieldset.so_listings_overview_filter .form-item-filters-persistent {
+    float: none;
+    clear: left;
+    margin: 0;
+}
+
+fieldset.so_listings_overview_filter #actions {
+    clear: left;
 }
 
 /* ----- VIEW MODES */
