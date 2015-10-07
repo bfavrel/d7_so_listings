@@ -850,7 +850,7 @@ function so_listings_filters_filters_element(&$element, $values, $filters_index,
     $element['sql_generator']['add_callback']['drag_id']['#value'] = $max_drag_id +1;
     $element['sql_generator']['add_group']['drag_id']['#value'] = $max_drag_id +1;
 
-    if(!empty(element_children($element['sql_generator']['clauses']))) {
+    if(count(element_children($element['sql_generator']['clauses'])) > 0) {
         $element['sql_generator']['save'] = array(
             '#type' => 'submit',
             '#value' => t("Save parameters"),

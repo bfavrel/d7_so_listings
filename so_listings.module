@@ -829,7 +829,8 @@ function so_listings_save_listing_definition(&$listing_definition) {
         unset($existing['id']);
         unset($definition['params']);
         $definition = array_merge((array)$existing, (array)$definition);
-    } else {
+    } elseif(array_key_exists('id', $definition) && !empty($definition['id'])) {
+
         $existing = (array)so_listings_get_listings_definitions($definition['id']);
 
         if(!empty($existing)) {
@@ -841,9 +842,9 @@ function so_listings_save_listing_definition(&$listing_definition) {
             if(array_key_exists('cache', $definition)) {
                 $listing_has_changed = ($listing_has_changed || ($definition['cache']['filters']['filters'] != $existing['cache']['filters']['filters']));
             }
-        }
 
-        $definition = array_merge((array)$existing, (array)$definition);
+            $definition = array_merge((array)$existing, (array)$definition);
+        }
     }
 
     $tags_hash = md5($definition['tags']);
@@ -878,11 +879,17 @@ function so_listings_save_listing_definition(&$listing_definition) {
     drupal_write_record('so_listings', $record, (!empty($record['id']) ? 'id' : array()));
 
     if($listing_has_changed) {
-        module_invoke_all('so_listings_changed', (object)$definition);
+        module_invoke_all('so_listings_changed', (object)$record);
     }
 
     if($tags_have_changed == true) {
         so_listings_save_tags($record['id'], $definition['tags']);
+    }
+
+    if(is_object($listing_definition)) {
+        $listing_definition->id = $record['id'];
+    } else {
+        $listing_definition['id'] = $record['id'];
     }
 
     return $sources_have_changed;

@@ -188,8 +188,6 @@ function solw_checkboxes_filter_alter($element, &$form_state) {
 
 function so_listings_weather_cron() {
 
-    $settings = variable_get('so_listings_weather_settings', array());
-
     $results = db_query("SELECT DISTINCT city FROM {so_listings_weather}");
 
     $weather_data = array();
@@ -272,7 +270,7 @@ function so_listings_weather_form_node_form_alter(&$form, &$form_state, $form_id
                 array('!link' => l(t("here"), 'admin/help/so_listings_weather', array('attributes' => array('target' => '_blank'))))
             ) . "</p>",
             '#options' => so_listings_weather_get_weather_types(),
-            '#default_value' => !empty($default_weathers) ? $default_weathers : array_keys(so_listings_weather_get_weather_types()),
+            '#default_value' => !empty($default_weathers) ? $default_weathers : array(),
         ),
 
         'solw_translations_msg' => array(),

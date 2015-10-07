@@ -125,7 +125,7 @@ function so_listings_settings_form($form, &$form_state) {
         '#type' => 'textfield',
         '#title' => t("Available display types"),
         '#description' => t("Comma separated. Must only contain : [a-z0-9_-]<br />" .
-                            "Used to define templates of type 'listing-[display type].tpl.php'.<br />" .
+                            "Used to define templates of type 'listing--[display type].tpl.php'.<br />" .
                             "These values are available for each preset.<br />" .
                             "The default one ('default') match the template 'listing.tpl.php'."),
         '#default_value' => $settings['listing_display_types'],
@@ -1180,16 +1180,14 @@ function so_listings_create_form_submit($form, &$form_state) {
 
     module_load_include('inc', 'so_listings', 'so_listings.sorting');
 
-    $definition = so_listings_get_listings_definitions($definition['id']);
-
-    $definition->cache['sorting']['so_listings_default'] = so_listings_sorting_compile_clauses(
+    $definition['cache']['sorting']['so_listings_default'] = so_listings_sorting_compile_clauses(
         array('so_listings_default' => $default_clauses), // on fabrique un faux tableau
         'so_listings_default',
         array(
             'custom_clauses' => array(),
             'modules_clauses' => module_invoke_all('so_listings_sorting'),
         ),
-        $definition->id
+        $definition['id']
     );
 
     so_listings_save_listing_definition($definition);
