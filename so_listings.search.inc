@@ -558,6 +558,13 @@ function so_listings_search_field_values($field_infos, $langcode, $configuration
 
     if($field_definition['type'] == 'list_text' || $field_definition['type'] == 'list_boolean') {
 
+        //TODO : ça, ça ne fonctionne pas.
+        //C'est destiné au champs SIRTAqui, seulement, il n'y a pas de réelle traduction des valeurs dans le connecteur SIRTAqui,
+        //puisque rien ne permet d'associer une valeur en langue par défaut à sa traduction.
+        //La seule solution, c'est de requêter la base, pour réunir les ID de valeurs utilisées, puis faire un array_intersect keys().
+        //C'est envisageable pour le mode 'additif', mais en terme de performances, difficilement possible avec le mode 'temps-réel'.
+        //Pour ce dernier, il faudrait un système de cache + cron. Pas le temps pour le moment.
+
         if(module_exists('i18n_field')) {
             $allowed_values = i18n_field_translate_allowed_values($field_definition, $configuration['options_language']);
         } else {
