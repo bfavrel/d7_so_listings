@@ -1,4 +1,4 @@
-name = "Listing Kiosque"
+name = "Listings Kiosque"
 description = "Provides a listing actor type to Kiosque module."
 package = "Saison d'Or"
 core = 7.x

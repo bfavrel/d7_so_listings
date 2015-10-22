@@ -42,6 +42,8 @@ function so_listings_install() {
         variable_set('language_content_type_' . $content_type_type, 2); // multilingue : activé avec traductions
     }
 
+    module_load_include('inc', 'so_listings', 'so_listings.field');
+
     field_cache_clear();
 
     $existing_field = field_info_field('field_listing_node');

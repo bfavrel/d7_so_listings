@@ -1020,8 +1020,10 @@ function so_listings_get_view_modes_default_settings() {
 
     $default_view_modes = array();
 
-    foreach($allowed_nodes_types as $node_type => $infos) {
-        $default_view_modes[$node_type] = 'disabled';
+    if(!empty($allowed_nodes_types)) {
+        foreach($allowed_nodes_types as $node_type => $infos) {
+            $default_view_modes[$node_type] = 'disabled';
+        }
     }
 
     $presets_settings = so_listings_get_presets();
@@ -2438,16 +2440,19 @@ function so_listings_theme() {
     );
 
     $settings = variable_get('sol_settings', array());
-    $display_types = explode(',', $settings['listing_display_types']);
 
-    foreach($display_types as $display_type) {
+    if(array_key_exists('listing_display_types', $settings)) {
+        $display_types = explode(',', $settings['listing_display_types']);
 
-        $theme['listing__' . strtolower(trim($display_type))] = array(
-            'render element' => 'element',
-            'template' => 'listing--' . strtolower(trim($display_type)),
-            'file' => 'theme.inc',
-            'path' => $path,
-        );
+        foreach($display_types as $display_type) {
+
+            $theme['listing__' . strtolower(trim($display_type))] = array(
+                'render element' => 'element',
+                'template' => 'listing--' . strtolower(trim($display_type)),
+                'file' => 'theme.inc',
+                'path' => $path,
+            );
+        }
     }
 
     return $theme;

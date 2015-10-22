@@ -503,25 +503,27 @@ function so_listings_view_modes_form($form, &$form_state) {
 
     $view_modes_default_configs = array_merge(array('disabled'), array_keys($view_modes_configs));
 
-    foreach($allowed_nodes_types as $node_type => $infos) {
+    if(!empty($allowed_nodes_types)) {
+        foreach($allowed_nodes_types as $node_type => $infos) {
 
-        if($form_state['submitted'] == false) {
-            $default = array_key_exists($node_type, $settings['default_view_modes']) ? $settings['default_view_modes'][$node_type] : null;
-        } else {
-            $default = array_key_exists($node_type, $form_state['input']['view_modes_overview']['default_view_modes']) ? $form_state['input']['view_modes_overview']['default_view_modes'][$node_type] : null;
-        }
+            if($form_state['submitted'] == false) {
+                $default = array_key_exists($node_type, $settings['default_view_modes']) ? $settings['default_view_modes'][$node_type] : null;
+            } else {
+                $default = array_key_exists($node_type, $form_state['input']['view_modes_overview']['default_view_modes']) ? $form_state['input']['view_modes_overview']['default_view_modes'][$node_type] : null;
+            }
 
-        $form['view_modes_overview']['default_view_modes'][$node_type] = array(
-            '#type' => 'radios',
-            '#title' => null,
-            '#options' => array(),
-            '#default_value' => $default,
-        );
+            $form['view_modes_overview']['default_view_modes'][$node_type] = array(
+                '#type' => 'radios',
+                '#title' => null,
+                '#options' => array(),
+                '#default_value' => $default,
+            );
 
-        $nodes_types_vm_options_pool[$node_type] = array();
+            $nodes_types_vm_options_pool[$node_type] = array();
 
-        foreach($view_modes_default_configs as $config) {
-            $form['view_modes_overview']['default_view_modes'][$node_type]['#options'][$config] = $infos['label'];
+            foreach($view_modes_default_configs as $config) {
+                $form['view_modes_overview']['default_view_modes'][$node_type]['#options'][$config] = $infos['label'];
+            }
         }
     }
 
@@ -593,7 +595,7 @@ function so_listings_view_modes_form_submit($form, &$form_state) {
 
     $variable = array(
         'configs' => $configs,
-        'default_view_modes' => array_filter($form_state['input']['view_modes_overview']['default_view_modes']),
+        'default_view_modes' => array_filter((array)$form_state['input']['view_modes_overview']['default_view_modes']),
     );
 
     variable_set('so_listings_view_modes', $variable);
