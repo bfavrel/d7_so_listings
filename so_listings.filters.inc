@@ -660,7 +660,8 @@ function so_listings_filters_filters_element(&$element, $values, $filters_index,
                 $source_fields_pool,
                 $fields_options,
                 $filters_index,
-                $clause_index++
+                $clause_index++,
+                $filter['language']
             );
 
             // @see so_listings_filters_clause_element()
@@ -841,7 +842,8 @@ function so_listings_filters_filters_element(&$element, $values, $filters_index,
         $source_fields_pool,
         $fields_options,
         $filters_index,
-        $clause_index++
+        $clause_index++,
+        $filter['language']
     );
 
     $element['sql_generator']['add_clause']['clause']['mode'] = array();
@@ -859,7 +861,7 @@ function so_listings_filters_filters_element(&$element, $values, $filters_index,
     }
 }
 
-function so_listings_filters_clause_element(&$element, $values, $source_fields_pool, $fields_options, $filters_index, $clause_index) {
+function so_listings_filters_clause_element(&$element, $values, $source_fields_pool, $fields_options, $filters_index, $clause_index, $filter_language) {
 
     $condition_options = array(
         '' => "- " . t("Condition") . " -",
@@ -951,7 +953,7 @@ function so_listings_filters_clause_element(&$element, $values, $source_fields_p
     if(!empty($values) && function_exists($function)) {
         $values['args'] = $values['args'] == $args_default_value ? '' : $values['args'];
 
-        $function($element['args'], $values['args'], $source_fields_pool[$selected_field], $conditions[$selected_condition], $clause_id);
+        $function($element['args'], $values['args'], $source_fields_pool[$selected_field], $conditions[$selected_condition], $clause_id, $filter_language);
     } else {
         _so_listings_filters_arguments_default_element($element['args'], $args_default_value);
     }
@@ -1628,7 +1630,7 @@ function _so_listings_filters_arguments_default_element(&$element, $arg) {
     );
 }
 
-function _so_listings_filters_arguments_single_element(&$element, $args, $field_infos, $condition_infos, $clause_id) {
+function _so_listings_filters_arguments_single_element(&$element, $args, $field_infos, $condition_infos, $clause_id, $filter_language) {
 
     switch($field_infos['widget']) {
 
@@ -1701,7 +1703,7 @@ function _so_listings_filters_arguments_single_element(&$element, $args, $field_
     }
 }
 
-function _so_listings_filters_arguments_multiple_element(&$element, $args, $field_infos, $condition_infos, $clause_id) {
+function _so_listings_filters_arguments_multiple_element(&$element, $args, $field_infos, $condition_infos, $clause_id, $filter_language) {
 
     switch($field_infos['widget']) {
 
@@ -1718,9 +1720,12 @@ function _so_listings_filters_arguments_multiple_element(&$element, $args, $fiel
         case 'options_select':
         case 'options_buttons':
 
+            $field_definition = field_info_field($field_infos['field_name']);
+            $allowed_values = list_allowed_values($field_definition);
+
             $element = array(
                 '#type' => 'checkboxes',
-                '#options' => list_allowed_values(field_info_field($field_infos['field_name'])),
+                '#options' => $allowed_values,
                 '#default_value' => (array)$args,
             );
             break;
@@ -1736,7 +1741,7 @@ function _so_listings_filters_arguments_multiple_element(&$element, $args, $fiel
     }
 }
 
-function _so_listings_filters_arguments_null_element(&$element, $args, $field_infos, $condition_infos, $clause_id) {
+function _so_listings_filters_arguments_null_element(&$element, $args, $field_infos, $condition_infos, $clause_id, $filter_language) {
 
     $element = array(
         '#markup' => "&nbsp;",
