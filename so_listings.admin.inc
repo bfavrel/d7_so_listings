@@ -422,7 +422,7 @@ function so_listings_view_modes_form($form, &$form_state) {
         if(!empty($vm_listing)) {
             $vm_listing['#type'] = 'container';
         } else {
-            $vm_listing['#markup'] = "- " . t("Unused") . " -";
+            $vm_listing['#markup'] = "- " . t("Predefined in presets") . " -";
         }
 
         $form['view_modes_overview']['configs'][$config] = array(
