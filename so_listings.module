@@ -1453,7 +1453,7 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
     }
 
     $listing_index++;
-    
+
     return $listing;
 }
 
@@ -1485,9 +1485,9 @@ function _so_listings_array_merge_recursive_distinct(array &$array1, array &$arr
  *                  - 'status' : int : (1) : filter nodes by status ('0' or '1'). If status is === 'null' no filtering occurs.
  *                  - 'count' : boolean : (false) count results ?
  *                  - 'count_method' : string : use a count query (=> 'query') or a simple 'count()' (=> 'count') on results array ?
- *                  - 'limit_from' : int : (0)
- *                  - 'limit_to' : int : (10000) : maximum number of results.
- *                  - 'limit_num' : int : (10000) : maximum number of result for a single query.
+ *                  - 'limit_from' : int : (0) equivalent to "0" in SQL "LIMIT 0,30".
+ *                  - 'limit_num' : int : (10000) : maximum number of result for a single query (for a page) - equivalent to "30" in SQL "LIMIT 0, 30".
+ *                  - 'limit_to' : int : (10000) : maximum number of results for the whole listing.
  *                  - 'wrapping_queries' : boolean : (false) use wrapping queries ?
  *                  - 'debug' : mixed : (null) : if set to 'true' or a string, the query will be displayed in Drupal message zone (in the second case
  *                              zone will be titled with the string). If explicitly set to 'false', query never be displayed, even if debug mode has been
@@ -1520,8 +1520,8 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
         'count' => false,
         'count_method' => 'count',
         'limit_from' => 0,
+        'limit_num' => 10000, // 10000 : db_query_range ne propose pas d'option "unlimited"
         'limit_to' => 10000,
-        'limit_num' => 10000, // db_query_range ne propose pas d'option "unlimited"
         'wrapping_queries' => false,
         'debug' => null,
         'debug_infos' => "",
@@ -2301,7 +2301,7 @@ function so_listings_cron() {
         'count' => false,
         'limit_from' => 0,
         'limit_to' => 10000,
-        'limit_num' => 10000, // db_query_range ne propose pas d'option "unlimited"
+        'limit_num' => 10000,   // db_query_range ne propose pas d'option "unlimited"
         'debug' => null,
     );
 
