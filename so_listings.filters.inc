@@ -1645,6 +1645,7 @@ function _so_listings_filters_arguments_single_element(&$element, $args, $field_
             break;
 
         case 'options_buttons':
+        case 'options_select':
 
             $element = array(
                 '#type' => 'radios',
