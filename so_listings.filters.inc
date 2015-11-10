@@ -1336,6 +1336,7 @@ function _so_listings_filters_query_single_argument(&$query, $field, $condition,
 
         case 'text_textfield':
         case 'options_buttons':
+        case 'options_select':
         case 'image_image':
         case 'number':
             $argument = trim($args);
