@@ -1428,9 +1428,6 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
                 $url_params['page'] = implode(',', $pager_params);
                 $_GET['page'] = $url_params['page'];
             }
-
-            $listing['infos']['listing_index'] = $listing_index;
-            $listing_index++;
         }
     } else {
         $listing = array('infos' => array());
@@ -1446,6 +1443,7 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
     $listing['infos']['lid'] = $lid;
     $listing['infos']['preset'] = $preset;
     $listing['infos']['options'] = $options;
+    $listing['infos']['listing_index'] = $listing_index;
 
     $settings = variable_get('sol_settings', array());
 
@@ -1454,6 +1452,8 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
         dpm($listing, "<strong>DEBUG - SOL output</strong>");
     }
 
+    $listing_index++;
+    
     return $listing;
 }
 
