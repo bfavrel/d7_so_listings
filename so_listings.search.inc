@@ -224,6 +224,10 @@ function so_listings_search_map_fields_types($type = null) {
             'type' => 'text',
             'columns' => array('value'),
         ),
+        'number_float' => array(
+            'type' => 'numerical',
+            'columns' => array('value'),
+        ),
         'number_decimal' => array(
             'type' => 'numerical',
             'columns' => array('value'),
