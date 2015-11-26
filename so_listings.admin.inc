@@ -130,6 +130,7 @@ function so_listings_settings_form($form, &$form_state) {
                             "The default one ('default') match the template 'listing.tpl.php'."),
         '#default_value' => $settings['listing_display_types'],
         '#size' => 100,
+        '#maxlength' => 512,
     );
 
     $form['settings']['global_switcher'] = array(
