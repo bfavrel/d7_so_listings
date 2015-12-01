@@ -2297,7 +2297,7 @@ function so_listings_cron() {
         'filters' => true,
         'search' => false,
         'sorting' => false,
-        'status' => null,
+        'status' => 1,
         'count' => false,
         'limit_from' => 0,
         'limit_to' => 10000,
