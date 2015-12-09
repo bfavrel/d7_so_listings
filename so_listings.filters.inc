@@ -1411,7 +1411,7 @@ function _so_listings_filters_query_single_argument(&$query, $field, $condition,
     $query['join'] = $fragment->joins;
     $query['where'][] = $fragment->fields[$field['column']] . $operator;
 
-    if(!empty($argument)) {
+    if(!empty($argument) || $argument === '0') {
         $query['args'][] = $argument;
     }
 }
