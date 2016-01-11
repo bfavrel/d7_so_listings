@@ -1451,6 +1451,15 @@ function _so_listings_filters_query_multiple_arguments(&$query, $field, $conditi
                 case 'options_select':
                 case 'options_buttons':
                     $arguments = "'" . implode("','", array_filter($args)) . "'";
+
+                    $operator = " NOT IN (" .
+                                "SELECT entity_id" .
+                                " FROM " . $fragment->table .
+                                " WHERE " . $db_field .
+                                " IN(" . $arguments . ")" .
+                                ")";
+
+                    $db_field = 'n.nid';
                     break;
 
                 default:
@@ -1461,10 +1470,9 @@ function _so_listings_filters_query_multiple_arguments(&$query, $field, $conditi
                     });
 
                     $arguments = "'" . implode("','", $arguments) . "'";
+                    $operator = " NOT IN(" . $arguments . ")";
                     break;
             }
-
-            $operator = " NOT IN(" . $arguments . ")";
 
             break;
 
