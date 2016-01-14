@@ -1709,6 +1709,8 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
                         '@name' => $definition->name,
                         '@lid' => $lid,
                     ));
+
+                    $sorting = array();
                     break;
                 }
 
