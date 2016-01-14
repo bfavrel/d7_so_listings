@@ -1651,6 +1651,11 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
         $query['where'][] = !empty($global_where) ?
                             "(" . $global_where . " AND (" . implode(" OR ", $filters_where) . "))" :
                             "(" . implode(" OR ", $filters_where) . ")";
+
+    // Certains listings sont enregistrés mais pas leur filtres, malgré les messages d'invitation à le faire
+    } elseif($options['filters'] == true && empty($definition->cache['filters']['filters'])) {
+        drupal_set_message(t("Filters for this listing have not been set. Please edit the listing and publish filters."), 'error');
+        return array();
     }
 
     //--- SEARCH FILTER
