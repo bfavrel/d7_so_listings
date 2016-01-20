@@ -1706,7 +1706,6 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
 
             // on parcourt les différentes instances (d'instances) jusqu'à trouver les clauses finales
             while(!is_array($sorting)) {
-                $sorting = $definition->cache['sorting'][$sorting];
 
                 // on a déjà traité cette clause : on est en train de boucler le while !
                 if(array_key_exists($sorting, $instances_processed)) {
@@ -1720,6 +1719,8 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
                 }
 
                 $instances_processed[$sorting] = true;
+
+                $sorting = $definition->cache['sorting'][$sorting];
             }
 
         } else {
