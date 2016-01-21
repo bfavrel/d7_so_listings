@@ -1678,6 +1678,8 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
             $module_options,
             array_key_exists($module, $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$module] : array()
         );
+
+        $options[$module] = $module_options;
     }
 
     //--- CONTEXT
@@ -1758,6 +1760,8 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
                 array_key_exists($module, $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$module] : array()
             );
 
+            $options[$module] = $module_options;
+
             if(empty($callback_sorting)) {continue;}
 
             $order_by[] = $callback_sorting['order_by'];
@@ -1817,6 +1821,8 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
                 $module_options,
                 array_key_exists($module, $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$module] : array()
             );
+
+            $options[$module] = $module_options;
 
             if(count(array_filter($wrapping_query)) > 0 || !empty($nid_column_name)) {
                 $wrapping_query['join'] = array_unique($wrapping_query['join']);
@@ -1958,6 +1964,8 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
             $module_options,
             array_key_exists($module, $options['so_listings']['sources_by_module']) ? $options['so_listings']['sources_by_module'][$module] : array()
         );
+
+        $options[$module] = $module_options;
     }
 
     $messages = array_unique(array_filter($messages));
