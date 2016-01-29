@@ -1,0 +1,236 @@
+<?php
+
+//so_listings_geoloc
+
+function so_listings_geoloc_menu() {
+    $items = array();
+
+    $items['admin/config/so_listings/settings/geoloc'] = array(
+        'title' => "Geolocation",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_geoloc_settings_form'),
+        'file' => 'so_listings_geoloc.admin.inc',
+        'access arguments' => array('configure so_listings'),
+        'weight' => 10,
+    );
+
+    return $items;
+}
+
+function so_listings_geoloc_field_extra_fields() {
+
+    $settings = variable_get('so_listings_geoloc_settings');
+
+    $results = db_query("
+        SELECT DISTINCT bundle
+        FROM {field_config_instance}
+        WHERE entity_type='node'
+        AND field_name=?",
+        array($settings['fields']['lng'])
+    );
+
+    $extra = array();
+
+    while($row = $results->fetchObject()) {
+        $extra['node'][$row->bundle]['display'] = array(
+            'sol_geoloc_distance' => array(
+                'label' => t("Module SOL Geoloc : distance in listing"),
+                'description' => t("Distance in Km"),
+                'weight' => 0,
+            ),
+        );
+    }
+
+    return $extra;
+}
+
+function so_listings_geoloc_preprocess_page(&$vars) {
+
+    if(so_listings_geoloc_is_mobile() == true
+        && path_is_admin(current_path()) == false) {
+        drupal_add_js(drupal_get_path('module', 'so_listings_geoloc') . '/js/so_listings_geoloc.js', array('scope' => 'footer'));
+    }
+}
+
+function so_listings_geoloc_is_mobile() {
+
+    if(!array_key_exists('sol_geoloc_is_mobile', $_COOKIE)) {
+
+        global $user;
+
+        if($user->uid == 1) {
+            $settings = variable_get('so_listings_geoloc_settings');
+            return $settings['debug_mode'];
+        }
+
+        $detection = mobile_detect_get_object();
+        $_COOKIE['sol_geoloc_is_mobile'] = $detection->isMobile() || $detection->isTablet();
+    }
+
+    return $_COOKIE['sol_geoloc_is_mobile'];
+}
+
+function so_listings_geoloc_get_user_position() {
+
+    if(!array_key_exists('sol_geoloc_position_lng', $_COOKIE)) {
+        return false;
+    }
+
+    return array(
+        'lng' => str_replace(',', '.', $_COOKIE['sol_geoloc_position_lng']),
+        'lat' => str_replace(',', '.', $_COOKIE['sol_geoloc_position_lat']),
+    );
+}
+
+function so_listings_geoloc_geoloc_state() {
+
+    if(isset($_GET['sol_geoloc'])) {
+        return true;
+    }
+
+    return false;
+}
+
+/*
+ * Implementation of hook_so_listings_node()
+ */
+function so_listings_geoloc_so_listings_node(&$node, $node_fields, $data) {
+
+    if(!array_key_exists('activate_geolocation_sorting', $data)
+        || $data['activate_geolocation_sorting'] == false
+        || so_listings_geoloc_is_mobile() == false
+        || so_listings_geoloc_get_user_position() == false) {
+        return;
+    }
+
+    if($data['sort'] != true && so_listings_geoloc_geoloc_state() == false) {return;}
+
+    // TODO : utiliser la formule d'Haversine :
+    $distance = sqrt($node_fields['squared_vector']) * 111; // 1° correspond à ça, en moyenne
+
+    if($distance < 1) {
+        $distance = (int)(round($distance * 100, 0) * 10) . " m";
+    } else {
+        $distance = str_replace(',0', '', number_format(round($distance, 1), 1, ',', '')) . " Km";
+    }
+
+    //TODO : fonction de thème
+    $node['sol_geoloc_distance'] = array(
+        '#prefix' => "<div class='sol_geoloc_distance'><span>",
+        '#suffix' => "</span></div>",
+        '#type' => 'markup',
+        '#markup' => $distance,
+    );
+}
+
+/*
+ * Implementation of hook_so_listings_sorting()
+ */
+function so_listings_geoloc_so_listings_sorting() {
+    return array(
+        'so_listings_geoloc_sorting' => array(
+            'label' => t("Sorting by distance (if geolocation is activated)"),
+            'callback' => 'so_listings_geoloc_so_listings_sorting_callback',
+            'cache' => false,
+        ),
+    );
+}
+function so_listings_geoloc_so_listings_sorting_callback($context = null, &$data = null) {
+
+    if($context == null) {return 'so_listings_geoloc';}
+
+    if(!array_key_exists('query_data_ready', $data) || $data['query_data_ready'] != true) {return array();}
+
+    return array(
+        'order_by' => "no_vector ASC, squared_vector ASC",
+        'join' => array(),
+    );
+}
+
+/*
+ * Implementation of hook_so_listings_query()
+ */
+function so_listings_geoloc_so_listings_query(&$query, &$data) {
+
+    if(!array_key_exists('activate_geolocation_sorting', $data)
+        || $data['activate_geolocation_sorting'] == false
+        || so_listings_geoloc_is_mobile() == false
+        || so_listings_geoloc_get_user_position() == false) {
+        return;
+    }
+
+    if($data['sort'] != true && so_listings_geoloc_geoloc_state() == false) {return;}
+
+    $settings = variable_get('so_listings_geoloc_settings');
+
+    $user_position = so_listings_geoloc_get_user_position();
+
+    $longitude_fragment = so_listings_prepare_query_fragment_data($settings['fields']['lng'] . '@field');
+    $query['join'] = array_merge($query['join'], $longitude_fragment->joins);
+
+    $latitude_fragment = so_listings_prepare_query_fragment_data($settings['fields']['lat'] . '@field');
+    $query['join'] = array_merge($query['join'], (array)$latitude_fragment->joins);
+
+    $query['fields'] = array_merge(
+        $query['fields'],
+        array(
+            "@longitudeB:=REPLACE(" . $longitude_fragment->fields['value'] . ", ',', '.') AS longitude",
+            "@latitudeB:=REPLACE(" . $latitude_fragment->fields['value'] . ", ',', '.') AS latitude",
+            "@x:=(@longitudeB-" . $user_position['lng'] . ") AS longitude_vector",
+            "@y:=(@latitudeB-" . $user_position['lat'] . ") AS latitude_vector",
+            "@squared_vector:=ABS(@x*@x+@y*@y) AS squared_vector",
+            "@no_vector:=(@squared_vector IS NULL) as no_vector",
+        )
+    );
+
+    $data['query_data_ready'] = true;
+}
+
+/*
+ * Implementation of hook_so_listings_build()
+ */
+function so_listings_geoloc_so_listings_build(&$build, $nodes_fields, $data) {
+
+    if(!array_key_exists('activate_geolocation_sorting', $data)
+        || $data['activate_geolocation_sorting'] == false
+        || so_listings_geoloc_is_mobile() == false
+        || so_listings_geoloc_get_user_position() == false) {
+        return;
+    }
+
+    $url_params = drupal_get_query_parameters();
+
+    if(isset($url_params['sol_geoloc'])) {
+        unset($url_params['sol_geoloc']);
+        $title = t("Use default sorting");
+        $class = 'sol_geoloc_active';
+    } else {
+        $url_params['sol_geoloc'] = 1;
+        $title = t("Use sorting by distance");
+        $class = 'sol_geoloc_inactive';
+    }
+
+    $build['sol_geoloc_switcher'] = array(
+        '#type' => 'link',
+        '#title' => $title,
+        '#href' => $_GET['q'],
+        '#options' => array('query' => $url_params),
+        '#attributes' => array('class' => array('sol_geoloc_link', $class)),
+    );
+}
+
+/*
+ * Implementation of hook_so_listings_settings()
+ */
+function so_listings_geoloc_so_listings_settings($values = array()) {
+
+    return array(
+        'activate_geolocation_sorting' => array(
+            '#type' => 'checkbox',
+            '#title' => t("Activate geolocation sorting"),
+            '#description' => t("Displays a button which offers to users to sort the listing by distances beetween him and the items."),
+            '#default_value' => array_key_exists('activate_geolocation_sorting', $values) ? $values['activate_geolocation_sorting'] : false,
+        ),
+    );
+}

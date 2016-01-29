@@ -1,0 +1,7 @@
+name = "Listings geolocation"
+description = "Allow sorting listings by distance between a user and items' location."
+package = "Saison d'Or"
+core = 7.x
+
+dependencies[] = so_listings
+dependencies[] = mobile_detect
