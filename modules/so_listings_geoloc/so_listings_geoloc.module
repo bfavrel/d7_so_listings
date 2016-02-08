@@ -192,6 +192,8 @@ function so_listings_geoloc_so_listings_query(&$query, &$data) {
  */
 function so_listings_geoloc_so_listings_build(&$build, $nodes_fields, $data) {
 
+    if($data == null) {return;}
+
     if(!array_key_exists('activate_geolocation_sorting', $data)
         || $data['activate_geolocation_sorting'] == false
         || so_listings_geoloc_is_mobile() == false
