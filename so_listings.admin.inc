@@ -1354,7 +1354,7 @@ function so_listings_params_form_elements(&$form, &$form_state, $listing_definit
     foreach($modules as $module) {
 
         if(!empty($listing_definition)
-            && array_key_exists('modules_settings', $listing_definition['params']) // for retro-compatibility
+            && array_key_exists('modules_settings', $listing_definition['params']) && is_array($listing_definition['params']['modules_settings']) // for retro-compatibility
             && array_key_exists($module, $listing_definition['params']['modules_settings'])) {
 
             $module_settings = $listing_definition['params']['modules_settings'][$module];
