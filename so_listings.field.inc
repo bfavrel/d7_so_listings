@@ -175,8 +175,6 @@ function so_listings_field_formatter_view($entity_type, $entity, $field, $instan
 
             $switcher_idx = &drupal_static(__FUNCTION__);
 
-            $element = array();
-
             if (!isset($switcher_idx)) {
                 $switcher_idx = 0;
             }
@@ -204,14 +202,31 @@ function so_listings_field_formatter_view($entity_type, $entity, $field, $instan
                 $current_preset = $_GET['preset'];
             }
 
-            $options = array(
-                'count' => true, // TODO : ça, ça devrait se trouver dans les presets, non ?
-                'wrapping_queries' => true,
-                'debug_infos' => __FUNCTION__ . "()",
-            );
+            // on offre aux modules la possibilité de court-circuiter la constitution du listing
+            $modules = module_implements('so_listings_formatter_view_alter');
 
-            $listing = so_listings_listing($lid, $current_preset, $options);
-            $element = so_listings_build($listing, null);
+            $element = array();
+
+            foreach($modules as $module) {
+                $function = $module . '_so_listings_formatter_view_alter';
+
+                $element = $function($current_preset, $delta, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
+
+                if(!empty($element)) {
+                    break;
+                }
+            }
+
+            if(empty($element)) {
+                $options = array(
+                    'count' => true, // TODO : ça, ça devrait se trouver dans les presets, non ?
+                    'wrapping_queries' => true,
+                    'debug_infos' => __FUNCTION__ . "()",
+                );
+
+                $listing = so_listings_listing($lid, $current_preset, $options);
+                $element = so_listings_build($listing);//modifié le 16/02/2016 - le second param était 'null'
+            }
 
             $element['switcher'] = $listing['nodes']['count'] !== '0' ?
                                    drupal_get_form('so_listings_preset_switcher_form_' . $switcher_idx, $switcher_idx, $presets, $current_preset) :

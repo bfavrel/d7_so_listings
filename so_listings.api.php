@@ -235,3 +235,17 @@ function hook_so_listings_node(&$node, $node_fields, $data) {}
  *
  */
 function hook_so_listings_build(&$build, $nodes_fields, $data) {}
+
+/**
+ * Modules can bypass the whole process of listing generation and display their own.
+ * If a module return an $element, this array will be used in place of the normal one.
+ * Modules are processed in install order. If multiple modules return $element, only the last one
+ * will be used.
+ *
+ * @param string $current_preset : preset used to display the field
+ * @param int $delta : the index of the current processed item out of $items.
+ * @other_params : @see hook_field_formatter_view()
+ *
+ * @return mixed : either an $element array or null.
+ */
+function hook_so_listings_formatter_view_alter($current_preset, $delta, $entity_type, $entity, $field, $instance, $langcode, $items, $display) {}

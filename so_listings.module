@@ -2411,15 +2411,9 @@ function so_listings_theme() {
             'file' => 'theme.inc',
             'path' => $path,
         ),
-        'field__listing_type' => array(
-            'render element' => 'element',
-            'template' => 'field--listing_type',
-            'file' => 'theme.inc',
-            'path' => $path,
-        ),
         'so_listing' => array( // whole listing render array
             'render element' => 'element',
-            'template' => 'so_listing',
+            'template' => 'so-listing',
             'file' => 'theme.inc',
             'path' => $path,
         ),
