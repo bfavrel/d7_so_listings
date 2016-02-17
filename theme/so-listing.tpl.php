@@ -1,5 +1,7 @@
 <?php
 /**
+ * Templates suggestion : so-listing--[preset].tpl.php
+ *
  * Available variables:
  * - 'element' : the listing element, with the following sub-elements :
  *      - 'listing_infos' : type 'value' : use $element['listing_infos']['#value'] to get value

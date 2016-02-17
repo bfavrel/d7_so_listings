@@ -1,5 +1,10 @@
 <?php
 
+function so_listings_preprocess_so_listing(&$vars) {
+
+    $vars['theme_hook_suggestions'][] = 'so_listing__' . $vars['element']['listing_infos']['#value']['preset'];
+}
+
 function theme_so_listings_widget_presets($vars) {
     $output = "";
 
