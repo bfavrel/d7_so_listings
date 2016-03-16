@@ -35,7 +35,7 @@
                         }
                         var ajax_url;
                         if (item['type'] === 'embeded') {
-                            ajax_url = Drupal.settings.basePath + Drupal.settings.pathPrefix + "so_listings/ajax/embeded/" + item['nid'] + "/" + item['lid'] + "/" + item['listing_index'] + "/" + item['preset'] + "/" + item['theme_hook'];
+                            ajax_url = Drupal.settings.basePath + Drupal.settings.pathPrefix + "so_listings/ajax/embeded/" + item['lid'] + "/" + item['ajax_id'] + "/" + item['listing_index'] + "/" + item['preset'] + "/" + item['theme_hook'];
                         } else if (item['type'] === 'node') {
                             ajax_url = Drupal.settings.basePath + Drupal.settings.pathPrefix + "so_listings/ajax/node/" + item['nid'] + "/" + item['listing_index'];
                         } else if (item['type'] === 'block') {
@@ -81,7 +81,7 @@
                             return false;
                         });
                     });
-                    
+
                     /* ---- Modification des href et action des formulaires et du lien de geoloc --- */
                     $listing.find('form').each(function() {
                         var params = so_listings_get_params(window.location.href);

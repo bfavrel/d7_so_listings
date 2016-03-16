@@ -293,10 +293,10 @@ function so_listings_menu() {
     );
     $items['so_listings/ajax/block/%'] = $items['so_listings/ajax/node/%']; // $nid[/$listing_index = 0]
 
-    $items['so_listings/ajax/embeded/%/%'] = array( // $nid/$lid[/$listing_index = 0][/$preset = 'default'][/$theme = 'so_listing']
+    $items['so_listings/ajax/embeded/%/%'] = array( // $lid/$ajax_id[/$listing_index = 0][/$preset = 'default'][/$theme = 'so_listing']
         'type' => MENU_CALLBACK,
         'page callback' => 'so_listings_ajax_listing_embeded',
-        'page arguments' => array(4),
+        'page arguments' => array(3, 4),
         'access arguments' => array('access content'),
     );
 
@@ -369,10 +369,11 @@ function so_listings_ajax_listing_node($type, $nid, $listing_index = 0) {
     return null;
 }
 
-function so_listings_ajax_listing_embeded($lid, $listing_index = 0, $preset = 'default', $theme = 'so_listing') {
+function so_listings_ajax_listing_embeded($lid, $ajax_id, $listing_index = 0, $preset = 'default', $theme = 'so_listing') {
 
     $options = array(
         'listing_index' => $listing_index,
+        'ajax_id' => $ajax_id,
     );
 
     $listing = so_listing($lid, $preset, $theme, $options);
@@ -1395,9 +1396,50 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
 
     if (!isset($listing_index)) {
         $listing_index = (int)$options['listing_index'];
+
+        //inutile et perturbe la détection des appels AJAX initiaux : voir ci-après
+        unset($options['listing_index']);
     }
 
-    $options = _so_listings_array_merge_recursive_distinct(so_listings_get_presets($preset)->params, $options);
+    $preset_options = so_listings_get_presets($preset)->params;
+
+    //Si le listing utilise AJAX ainsi que la pagination et que les options initiales et/ou la requête
+    //ne sont pas vide, cela signifie que nous sommes en présence d'un listing généré en code. Par conséquent
+    //les éléments doivent être mis en cache, car ces paramètres ne seront plus repassés.
+    if($preset_options['so_listings']['ajax'] == 1 && $preset_options['so_listings']['pager'] == 1) {
+
+        //appel AJAX d'un listing embedded
+        if(array_key_exists('ajax_id', $options)) {
+
+            $ajax_id = $options['ajax_id'];
+
+            $cid = 'so_listings:ajax:' . $ajax_id;
+            $cache = cache_get($cid);
+
+            //le cache peut avoir été vidé entre-temps
+            if(!empty($cache)) {
+                $data = $cache->data;
+
+                $options = $data['options'];
+                $query = $data['query'];
+            }
+
+        //appel initial d'un listing embeded
+        } elseif(!empty($options) || !empty($query)) {
+
+            //on génère un identifiant unique car d'un utilisateur à un autre, les paramètres ne sont pas forcément les mêmes.
+            $ajax_id = uniqid();
+            $cid = 'so_listings:ajax:' . $ajax_id;
+
+            $data = array(
+                'options' => $options,
+                'query' => $query,
+            );
+            cache_set($cid, $data, 'cache', time() + 86400);//60s * 60 * 24 = 24h
+        }
+    }
+
+    $options = _so_listings_array_merge_recursive_distinct($preset_options, $options);
 
     if ((int)$options['limit_num'] == 0) {
         $options['limit_num'] = 10000;
@@ -1444,6 +1486,10 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
     $listing['infos']['preset'] = $preset;
     $listing['infos']['options'] = $options;
     $listing['infos']['listing_index'] = $listing_index;
+
+    if(isset($ajax_id)) {
+        $listing['infos']['ajax_id'] = $ajax_id;
+    }
 
     $settings = variable_get('sol_settings', array());
 

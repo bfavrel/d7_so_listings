@@ -13,6 +13,7 @@
  *      - 'count_mode' : type 'value' : use $element['count_mode']['#value'] to get value : either 'query' or 'count' (simple 'count()' on results)
  *      - 'listing'
  *      - 'pager' : markup
+ * 
  */
 
 $listing_classes .= ' listing-index-' . $element['listing_infos']['#value']['listing_index'] . ' ';
@@ -30,6 +31,7 @@ if ($element['listing_infos']['#value']['options']['so_listings']['ajax'] > 0) {
     $js_data[$lid]['path'] = url("node/".$element['listing_infos']['#value']['nid']);
     $js_data[$lid]['lid'] = $lid;
     $js_data[$lid]['listing_index'] = $element['listing_infos']['#value']['listing_index'];
+    $js_data[$lid]['ajax_id'] = array_key_exists('ajax_id', $element['listing_infos']['#value']) ? $element['listing_infos']['#value']['ajax_id'] : 0;
     $js_data[$lid]['preset'] = $element['listing_infos']['#value']['preset'];
     $js_data[$lid]['theme_hook'] = $element['#theme'];
     $js_data[$lid]['type'] = 'embeded';
