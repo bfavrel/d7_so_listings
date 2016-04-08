@@ -824,10 +824,10 @@ function so_listings_sorting_context_form_submit($form, &$form_state) {
 
             $definition->sorting['sorting'][$context] = array();
 
-            $sorting_cache = array(
+            $sorting_cache = array(array(
                 'order_by' => '',
                 'join' => array(),
-            );
+            ));
         }
 
     // ...ou duplication...
