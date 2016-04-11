@@ -134,6 +134,11 @@ function so_listings_weather_filter_callback(&$query, $lid, &$data) {
 
     if(empty($weather_types)) {return;}
 
+    $settings = variable_get('so_listings_weather_settings', array());
+    $weather_data = variable_get('so_listings_weather_current_weather', array());
+
+    if(empty($weather_data)) {return;}
+
     $weather_type_fragment = so_listings_prepare_query_fragment_data('weather_type@so_listings_weather');
     $query['join'][] = $weather_type_fragment->joins[0];
 
@@ -146,9 +151,6 @@ function so_listings_weather_filter_callback(&$query, $lid, &$data) {
     $where = array();
 
     if(array_key_exists('current', $weather_types)) {
-
-        $settings = variable_get('so_listings_weather_settings', array());
-        $weather_data = variable_get('so_listings_weather_current_weather', array());
 
         $city_fragment = so_listings_prepare_query_fragment_data('city@so_listings_weather');
 
@@ -208,11 +210,17 @@ function so_listings_weather_get_data($city_code) {
 
     $url = "http://weather.yahooapis.com/forecastrss?w=" . $city_code . "&u=c";
     $xml = simplexml_load_file($url, null, LIBXML_NOCDATA);
+
+    if(empty($xml)) {
+        watchdog('SOL Weather', "Yahoo server doesn't provide any XML data", array(), WATCHDOG_ERROR);
+        return;
+    }
+
     $ns = $xml->getNamespaces(true);
     $xml->registerXPathNamespace('c', $ns['yweather']);
 
     if (!isset($xml->channel->link)) {
-        watchdog('SOL Weather', "Unable to get data for city code : @code", array('@code' => $city_code), WATCHDOG_WARNING);
+        watchdog('SOL Weather', "Unable to get data for city code : @code", array('@code' => $city_code), WATCHDOG_ERROR);
         return;
     }
 
