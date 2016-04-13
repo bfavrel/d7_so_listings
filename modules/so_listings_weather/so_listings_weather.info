@@ -1,4 +1,4 @@
-name = "Listings Weather"
+name = "SO Listings Weather"
 description = "Provides SO Listings functionalities to filter listings according to current weather."
 package = "Saison d'Or"
 core = 7.x

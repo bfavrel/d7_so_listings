@@ -3,15 +3,15 @@
 # French translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  so_listings_weather.yahoo.inc: n/a
+#  so_listings_weather.openweather.inc: n/a
 #  so_listings_weather.module: n/a
 #  so_listings_weather.info: n/a
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2015-07-03 17:58+0200\n"
-"PO-Revision-Date: 2015-07-03 18:01+0100\n"
+"POT-Creation-Date: 2016-04-11 16:52+0200\n"
+"PO-Revision-Date: 2016-04-11 17:10+0100\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: French <EMAIL@ADDRESS>\n"
 "MIME-Version: 1.0\n"
@@ -20,189 +20,289 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n>1);\n"
 "X-Generator: Poedit 1.5.4\n"
 
-#: so_listings_weather.yahoo.inc:6
-msgid "Tornado"
-msgstr "Tornade"
+#: so_listings_weather.openweather.inc:6
+msgid "thunderstorm with light rain"
+msgstr "orage avec pluie"
 
-#: so_listings_weather.yahoo.inc:7
-msgid "Tropical storm"
-msgstr "Tempête tropicale"
+#: so_listings_weather.openweather.inc:7
+msgid "thunderstorm with rain"
+msgstr "orage avec pluie"
 
-#: so_listings_weather.yahoo.inc:8
-msgid "Hurricane"
-msgstr "Ouragan"
+#: so_listings_weather.openweather.inc:8
+msgid "thunderstorm with heavy rain"
+msgstr "orage avec de fortes pluies"
 
-#: so_listings_weather.yahoo.inc:9
-msgid "Severe thunderstorms"
-msgstr "Orages violents"
+#: so_listings_weather.openweather.inc:9
+msgid "light thunderstorm"
+msgstr "orage léger"
 
-#: so_listings_weather.yahoo.inc:10
-msgid "Thunderstorms"
-msgstr "Orages"
+#: so_listings_weather.openweather.inc:10
+msgid "thunderstorm"
+msgstr "orage"
 
-#: so_listings_weather.yahoo.inc:11
-msgid "Mixed rain ad snow"
-msgstr "Pluie et neige"
+#: so_listings_weather.openweather.inc:11
+msgid "heavy thunderstorm"
+msgstr "orage violent"
 
-#: so_listings_weather.yahoo.inc:12
-msgid "Mixed rain ad sleet"
-msgstr "Pluie et neige fondue"
+#: so_listings_weather.openweather.inc:12
+msgid "ragged thunderstorm"
+msgstr "orage"
 
-#: so_listings_weather.yahoo.inc:13
-msgid "Mixed snow and sleet"
-msgstr "Neige et neige fondue"
+#: so_listings_weather.openweather.inc:13
+msgid "thunderstorm with light drizzle"
+msgstr "orage avec faible pluie"
 
-#: so_listings_weather.yahoo.inc:14
-msgid "Freezing drizzle"
-msgstr "Brouillard givrant"
+#: so_listings_weather.openweather.inc:14
+msgid "thunderstorm with drizzle"
+msgstr "orage avec pluie"
 
-#: so_listings_weather.yahoo.inc:15
-msgid "Drizzle"
-msgstr "Bruine"
+#: so_listings_weather.openweather.inc:15
+msgid "thunderstorm with heavy drizzle"
+msgstr "orage avec forte pluie"
 
-#: so_listings_weather.yahoo.inc:16
-msgid "Freezing raing"
-msgstr "Pluie verglaçante"
+#: so_listings_weather.openweather.inc:16
+msgid "light intensity drizzle"
+msgstr "bruine"
 
-#: so_listings_weather.yahoo.inc:17;18
-msgid "Showers"
-msgstr "Averses"
+#: so_listings_weather.openweather.inc:17
+msgid "drizzle"
+msgstr "bruine"
 
-#: so_listings_weather.yahoo.inc:19
-msgid "Snow flurries"
-msgstr "Rafales de neige"
+#: so_listings_weather.openweather.inc:18
+msgid "heavy intensity drizzle"
+msgstr "forte bruine"
 
-#: so_listings_weather.yahoo.inc:20
-msgid "Light snow showers"
-msgstr "Légères chutes de neige"
+#: so_listings_weather.openweather.inc:19
+msgid "light intensity drizzle rain"
+msgstr "bruine"
 
-#: so_listings_weather.yahoo.inc:21
-msgid "Blowing snow"
-msgstr "Blizzard"
+#: so_listings_weather.openweather.inc:20
+msgid "drizzle rain"
+msgstr "bruine"
 
-#: so_listings_weather.yahoo.inc:22
-msgid "Snow"
-msgstr "Neige"
+#: so_listings_weather.openweather.inc:21
+msgid "heavy intensity drizzle rain"
+msgstr "bruine persistante"
 
-#: so_listings_weather.yahoo.inc:23
-msgid "Hail"
-msgstr "Grêle"
+#: so_listings_weather.openweather.inc:22
+msgid "shower rain and drizzle"
+msgstr "pluie et bruine"
 
-#: so_listings_weather.yahoo.inc:24
-msgid "Sleet"
-msgstr "Neige fondue"
+#: so_listings_weather.openweather.inc:23
+msgid "heavy shower rain and drizzle"
+msgstr "forte pluie et bruine"
 
-#: so_listings_weather.yahoo.inc:25
-msgid "Dust"
-msgstr "Poussière"
+#: so_listings_weather.openweather.inc:24
+msgid "shower drizzle"
+msgstr "bruine"
 
-#: so_listings_weather.yahoo.inc:26
-msgid "Foggy"
-msgstr "Brumeux"
+#: so_listings_weather.openweather.inc:25
+msgid "light rain"
+msgstr "pluie fine"
 
-#: so_listings_weather.yahoo.inc:27
-msgid "Haze"
-msgstr "Brume"
+#: so_listings_weather.openweather.inc:26
+msgid "moderate rain"
+msgstr "pluie modérée"
 
-#: so_listings_weather.yahoo.inc:28
-msgid "Smoky"
-msgstr "Enfumé"
+#: so_listings_weather.openweather.inc:27
+msgid "heavy intensity rain"
+msgstr "pluie forte"
 
-#: so_listings_weather.yahoo.inc:29
-msgid "Blustery"
-msgstr "Bourrasques"
+#: so_listings_weather.openweather.inc:28
+msgid "very heavy rain"
+msgstr "forte pluie"
 
-#: so_listings_weather.yahoo.inc:30
-msgid "Windy"
-msgstr "Venteux"
+#: so_listings_weather.openweather.inc:29
+msgid "extreme rain"
+msgstr "pluie diluvienne"
 
-#: so_listings_weather.yahoo.inc:31
-msgid "Cold"
-msgstr "Froid"
+#: so_listings_weather.openweather.inc:30
+msgid "freezing rain"
+msgstr "pluie verglaçante"
 
-#: so_listings_weather.yahoo.inc:32
-msgid "Cloudy"
-msgstr "Nuageux"
+#: so_listings_weather.openweather.inc:31
+msgid "light intensity shower rain"
+msgstr "pluie"
 
-#: so_listings_weather.yahoo.inc:33
-msgid "Mostly cloudy (night)"
-msgstr "Nuageux la plupart du temps (la nuit)"
+#: so_listings_weather.openweather.inc:32
+msgid "shower rain"
+msgstr "pluie"
 
-#: so_listings_weather.yahoo.inc:34
-msgid "Mostly cloudy (day)"
-msgstr "Nuageux la plupart du temps (le jour)"
+#: so_listings_weather.openweather.inc:33
+msgid "heavy intensity shower rain"
+msgstr "forte pluie"
 
-#: so_listings_weather.yahoo.inc:35
-msgid "Partly cloudy (night)"
-msgstr "Partiellement nuageux (la nuit)"
+#: so_listings_weather.openweather.inc:34
+msgid "ragged shower rain"
+msgstr "forte pluie"
 
-#: so_listings_weather.yahoo.inc:36
-msgid "Partly cloudy (day)"
-msgstr "Partiellement nuageux (le jour)"
+#: so_listings_weather.openweather.inc:35
+msgid "light snow"
+msgstr "neige éparse"
 
-#: so_listings_weather.yahoo.inc:37
-msgid "Clear (night)"
-msgstr "Nuit claire"
+#: so_listings_weather.openweather.inc:36
+msgid "snow"
+msgstr "neige"
 
-#: so_listings_weather.yahoo.inc:38
-msgid "Sunny"
-msgstr "Ensoleillé"
+#: so_listings_weather.openweather.inc:37
+msgid "heavy snow"
+msgstr "neige importante"
 
-#: so_listings_weather.yahoo.inc:39
-msgid "Fair (night)"
-msgstr "Belle nuit"
+#: so_listings_weather.openweather.inc:38
+msgid "sleet"
+msgstr "neige fondue"
 
-#: so_listings_weather.yahoo.inc:40
-msgid "Fair (day)"
-msgstr "Belle journée"
+#: so_listings_weather.openweather.inc:39
+msgid "shower sleet"
+msgstr "neige fondue"
 
-#: so_listings_weather.yahoo.inc:41
-msgid "Mixed rain and hail"
-msgstr "Pluie et grêle"
+#: so_listings_weather.openweather.inc:40
+msgid "light rain and snow"
+msgstr "pluie et neige légères"
 
-#: so_listings_weather.yahoo.inc:42
-msgid "Hot"
-msgstr "Chaud"
+#: so_listings_weather.openweather.inc:41
+msgid "rain and snow"
+msgstr "pluie et neige"
 
-#: so_listings_weather.yahoo.inc:43
-msgid "Isolated thunderstorms"
-msgstr "Orages isolés"
+#: so_listings_weather.openweather.inc:42
+msgid "light shower snow"
+msgstr "neige"
 
-#: so_listings_weather.yahoo.inc:44
-msgid "Scattered thunderstorms"
-msgstr "Orages intermittents"
+#: so_listings_weather.openweather.inc:43
+msgid "shower snow"
+msgstr "neige"
 
-#: so_listings_weather.yahoo.inc:45
-msgid "Scattered thunderstroms"
-msgstr "Orages intermittents"
+#: so_listings_weather.openweather.inc:44
+msgid "heavy shower snow"
+msgstr "forte neige"
 
-#: so_listings_weather.yahoo.inc:46
-msgid "Scattered showers"
-msgstr "Averses intermittentes"
+#: so_listings_weather.openweather.inc:45
+msgid "mist"
+msgstr "brouillard"
 
-#: so_listings_weather.yahoo.inc:47;49
-msgid "Heavy snow"
-msgstr "Chutes de neige abondantes"
+#: so_listings_weather.openweather.inc:46
+msgid "smoke"
+msgstr "brouillard épais"
 
-#: so_listings_weather.yahoo.inc:48
-msgid "Scattered snow showers"
-msgstr "Chutes de neige intermittentes"
+#: so_listings_weather.openweather.inc:47
+msgid "haze"
+msgstr "brume"
 
-#: so_listings_weather.yahoo.inc:50
-msgid "Partly cloudy"
-msgstr "Partiellement nuageux"
+#: so_listings_weather.openweather.inc:48
+msgid "sand, dust whirls"
+msgstr "sable, tourbillons de poussière"
 
-#: so_listings_weather.yahoo.inc:51
-msgid "Thundershowers"
-msgstr "Averses orageuses"
+#: so_listings_weather.openweather.inc:49
+msgid "fog"
+msgstr "brouillard"
 
-#: so_listings_weather.yahoo.inc:52
-msgid "Snow showers"
-msgstr "Chutes de neige"
+#: so_listings_weather.openweather.inc:50
+msgid "sand"
+msgstr "sable"
 
-#: so_listings_weather.yahoo.inc:53
-msgid "Isolated thundershowers"
-msgstr "Averses orageuses isolées"
+#: so_listings_weather.openweather.inc:51
+msgid "dust"
+msgstr "poussière"
+
+#: so_listings_weather.openweather.inc:52
+msgid "volcanic ash"
+msgstr "cendres volcaniques"
+
+#: so_listings_weather.openweather.inc:53
+msgid "squalls"
+msgstr "bourasques"
+
+#: so_listings_weather.openweather.inc:54;60
+msgid "tornado"
+msgstr "tornade"
+
+#: so_listings_weather.openweather.inc:55
+msgid "clear sky"
+msgstr "ciel dégagé"
+
+#: so_listings_weather.openweather.inc:56
+msgid "few clouds"
+msgstr "quelques nuages"
+
+#: so_listings_weather.openweather.inc:57
+msgid "scattered clouds"
+msgstr "nuages épars"
+
+#: so_listings_weather.openweather.inc:58
+msgid "broken clouds"
+msgstr "nuages épars"
+
+#: so_listings_weather.openweather.inc:59
+msgid "overcast clouds"
+msgstr "couvert"
+
+#: so_listings_weather.openweather.inc:61
+msgid "tropical storm"
+msgstr "tempête tropicale"
+
+#: so_listings_weather.openweather.inc:62;78
+msgid "hurricane"
+msgstr "ouragan"
+
+#: so_listings_weather.openweather.inc:63
+msgid "cold"
+msgstr "froid"
+
+#: so_listings_weather.openweather.inc:64
+msgid "hot"
+msgstr "chaud"
+
+#: so_listings_weather.openweather.inc:65
+msgid "windy"
+msgstr "venteux"
+
+#: so_listings_weather.openweather.inc:66
+msgid "hail"
+msgstr "grêle"
+
+#: so_listings_weather.openweather.inc:67
+msgid "calm"
+msgstr "temps calme"
+
+#: so_listings_weather.openweather.inc:68
+msgid "light breeze"
+msgstr "légère brise"
+
+#: so_listings_weather.openweather.inc:69
+msgid "gentle breeze"
+msgstr "légère brise"
+
+#: so_listings_weather.openweather.inc:70
+msgid "moderate breeze"
+msgstr "brise modérée"
+
+#: so_listings_weather.openweather.inc:71
+msgid "fresh breeze"
+msgstr "brise fraiche"
+
+#: so_listings_weather.openweather.inc:72
+msgid "strong breeze"
+msgstr "forte brise"
+
+#: so_listings_weather.openweather.inc:73
+msgid "high wind, near gale"
+msgstr "vent fort"
+
+#: so_listings_weather.openweather.inc:74
+msgid "gale"
+msgstr "grand vent"
+
+#: so_listings_weather.openweather.inc:75
+msgid "severe gale"
+msgstr "vent sévère"
+
+#: so_listings_weather.openweather.inc:76
+msgid "storm"
+msgstr "orage"
+
+#: so_listings_weather.openweather.inc:77
+msgid "violent storm"
+msgstr "orage violent"
 
 #: so_listings_weather.module:9
 msgid "Configure module"
@@ -292,7 +392,7 @@ msgstr "Météo appropriée pour ce node"
 msgid "You can find detailed weather states nomenclature !link"
 msgstr "Vous pouvez consulter la nomenclature détaillée des états météo !link"
 
-#: so_listings_weather.module:272
+#: so_listings_weather.module:272;336
 msgid "here"
 msgstr "ici"
 
@@ -304,75 +404,87 @@ msgstr ""
 "Dans la mesure où ce node est en langage par défaut, tous ses paramètres "
 "météo seront automatiquement dupliqués dans toutes ses traductions."
 
-#: so_listings_weather.module:329
+#: so_listings_weather.module:335
+msgid "API key"
+msgstr "Clé d'API"
+
+#: so_listings_weather.module:336
+msgid "Get key !here"
+msgstr "Obtenez une clé !here"
+
+#: so_listings_weather.module:343
 msgid "Configuration"
 msgstr "Configuration"
 
-#: so_listings_weather.module:343
+#: so_listings_weather.module:357
 msgid "Reference city code"
 msgstr "Code de la ville de référence"
 
-#: so_listings_weather.module:349
+#: so_listings_weather.module:363
 msgid "Reference city label"
 msgstr "Label de la ville de référence"
 
-#: so_listings_weather.module:355
+#: so_listings_weather.module:369
 msgid "Add"
 msgstr "Ajouter"
 
-#: so_listings_weather.module:362
+#: so_listings_weather.module:375
+msgid "Launch weather update"
+msgstr "Lancer la mise à jour de la météo"
+
+#: so_listings_weather.module:382
 msgid "Nodes types"
 msgstr "Types de nodes"
 
-#: so_listings_weather.module:369
+#: so_listings_weather.module:389
 msgid "Nodes types to filter"
 msgstr "Types de nodes à filtrer"
 
-#: so_listings_weather.module:377
+#: so_listings_weather.module:397
 msgid "Weather mappings"
-msgstr "Mappages des météos"
+msgstr "Mappages des conditions"
 
-#: so_listings_weather.module:391
+#: so_listings_weather.module:411
 msgid "Save"
 msgstr "Enregistrer"
 
-#: so_listings_weather.module:442
+#: so_listings_weather.module:462
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: so_listings_weather.module:449
+#: so_listings_weather.module:469
 msgid "Delete"
 msgstr "Supprimer"
 
-#: so_listings_weather.module:461
+#: so_listings_weather.module:481
 msgid "Good weather"
 msgstr "Beau temps"
 
-#: so_listings_weather.module:462
+#: so_listings_weather.module:482
 msgid "Middle weather"
 msgstr "Temps moyen"
 
-#: so_listings_weather.module:463
+#: so_listings_weather.module:483
 msgid "Bad weather"
 msgstr "Mauvais temps"
 
-#: so_listings_weather.module:531
+#: so_listings_weather.module:549
 msgid "No city set"
 msgstr "Aucune ville définie"
 
-#: so_listings_weather.module:557
+#: so_listings_weather.module:575
 msgid "City code"
 msgstr "Code de la ville"
 
-#: so_listings_weather.module:558
+#: so_listings_weather.module:576
 msgid "City"
 msgstr "Ville"
 
-#: so_listings_weather.module:559
+#: so_listings_weather.module:577
 msgid "Weight"
 msgstr "Poids"
 
-#: so_listings_weather.module:560
+#: so_listings_weather.module:578
 msgid "Current weather"
 msgstr "Météo actuelle"
 

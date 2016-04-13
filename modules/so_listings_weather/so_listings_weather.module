@@ -57,7 +57,7 @@ function so_listings_weather_help($path, $arg) {
 
     $output = "<h2>" . t("Nomenclature used") . "</h2>";
 
-    module_load_include('inc', 'so_listings_weather', 'so_listings_weather.yahoo');
+    module_load_include('inc', 'so_listings_weather', 'so_listings_weather.openweather');
 
     $weathers_list = so_listings_weather_get_list();
     $settings = variable_get('so_listings_weather_settings', array());
@@ -190,6 +190,8 @@ function solw_checkboxes_filter_alter($element, &$form_state) {
 
 function so_listings_weather_cron() {
 
+    $settings = variable_get('so_listings_weather_settings', array());
+
     $results = db_query("SELECT DISTINCT city FROM {so_listings_weather}");
 
     $weather_data = array();
@@ -208,25 +210,19 @@ function so_listings_weather_cron() {
 
 function so_listings_weather_get_data($city_code) {
 
-    $url = "http://weather.yahooapis.com/forecastrss?w=" . $city_code . "&u=c";
-    $xml = simplexml_load_file($url, null, LIBXML_NOCDATA);
+    $settings = variable_get('so_listings_weather_settings');
 
-    if(empty($xml)) {
-        watchdog('SOL Weather', "Yahoo server doesn't provide any XML data", array(), WATCHDOG_ERROR);
+    $url = 'http://api.openweathermap.org/data/2.5/weather?id=' . $city_code . '&appid=' . $settings['api']['api_key'];
+
+    $data = file_get_contents($url);
+    $data = json_decode($data);
+
+    if ($data->cod != 200) {
+        watchdog('SOL Weather', "Unable to get data for city code : @code", array('@code' => $city_code), WATCHDOG_WARNING);
         return;
     }
 
-    $ns = $xml->getNamespaces(true);
-    $xml->registerXPathNamespace('c', $ns['yweather']);
-
-    if (!isset($xml->channel->link)) {
-        watchdog('SOL Weather', "Unable to get data for city code : @code", array('@code' => $city_code), WATCHDOG_ERROR);
-        return;
-    }
-
-    $condition = $xml->xpath('//c:condition');
-
-    return (int)$condition[0]->attributes()->code;
+    return (int)$data->weather[0]->id;
 }
 
 function so_listings_weather_form_node_form_alter(&$form, &$form_state, $form_id) {
@@ -278,7 +274,7 @@ function so_listings_weather_form_node_form_alter(&$form, &$form_state, $form_id
                 array('!link' => l(t("here"), 'admin/help/so_listings_weather', array('attributes' => array('target' => '_blank'))))
             ) . "</p>",
             '#options' => so_listings_weather_get_weather_types(),
-            '#default_value' => !empty($default_weathers) ? $default_weathers : array(),
+            '#default_value' => !empty($default_weathers) ? $default_weathers : array_keys(so_listings_weather_get_weather_types()),
         ),
 
         'solw_translations_msg' => array(),
@@ -330,6 +326,20 @@ function so_listings_weather_settings_form($form, &$form_state) {
 
         'settings' => array(
 
+            'api' => array(
+                '#type' => 'fieldset',
+                '#title' => "API",
+                '#collapsible' => true,
+                '#collapsed' => true,
+
+                'api_key' => array(
+                    '#type' => 'textfield',
+                    '#title' => t("API key"),
+                    '#description' => t("Get key !here", array('!here' => l(t("here"), 'http://openweathermap.org/', array('attributes' => array('target' => '_blank'))))),
+                    '#default_value' => $settings['api']['api_key'],
+                ),
+            ),
+
             'general' => array(
                 '#type' => 'fieldset',
                 '#title' => t("Configuration"),
@@ -347,6 +357,7 @@ function so_listings_weather_settings_form($form, &$form_state) {
                     'city_code' => array(
                         '#type' => 'textfield',
                         '#title' => t("Reference city code"),
+                        '#description' => t("Nomenclature can be found in 'city.list.json' file"),
                         '#size' => 20,
                     ),
 
@@ -360,6 +371,12 @@ function so_listings_weather_settings_form($form, &$form_state) {
                         '#type' => 'submit',
                         '#value' => t("Add"),
                     ),
+                ),
+
+                'update_weather' => array(
+                    '#type' => 'submit',
+                    '#value' => t("Launch weather update"),
+                    '#parents' => array('update_weather'),
                 ),
             ),
 
@@ -398,14 +415,14 @@ function so_listings_weather_settings_form($form, &$form_state) {
         ),
     );
 
-    module_load_include('inc', 'so_listings_weather', 'so_listings_weather.yahoo');
+    module_load_include('inc', 'so_listings_weather', 'so_listings_weather.openweather');
     $weathers = so_listings_weather_get_list();
 
     $weather_mapping_options = so_listings_weather_get_weather_types();
 
     foreach($weathers as $code => $infos) {
 
-        $form['settings']['weather_mappings']['weather_mappings'][] = array(
+        $form['settings']['weather_mappings']['weather_mappings'][$code] = array(
             'weather' => array(
                 '#type' => 'markup',
                 '#markup' => $infos['title'] . " (" . $code . ")",
@@ -473,7 +490,6 @@ function so_listings_weather_get_weather_types() {
 function so_listings_weather_settings_form_submit($form, &$form_state) {
 
     $settings = variable_get('so_listings_weather_settings');
-    $launch_cron = false;
 
     if(end($form_state['triggering_element']['#parents']) == 'add_city') {
 
@@ -482,6 +498,11 @@ function so_listings_weather_settings_form_submit($form, &$form_state) {
     } elseif($form_state['triggering_element']['#parents'][0] == 'delete_city') {
 
         unset($settings['general']['city_codes'][$form_state['triggering_element']['#parents'][1]]);
+
+    } elseif($form_state['triggering_element']['#parents'][0] == 'update_weather') {
+
+        so_listings_weather_cron();
+        return;
 
     } else {
 
