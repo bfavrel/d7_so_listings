@@ -42,7 +42,7 @@ function hook_so_listings_delete($listing) {}
  * Provides form elements for edit preset form.
  * Stored values are passed to the compilator, and are available for so_listing's hooks.
  *
- * @param array &$form : the module's fieldset element.
+ * @param array &$form : the module's fieldset children elements.
  * @param array $default_values : database values previously stored for the calling module.
  */
 function hook_so_listings_preset(&$form, $default_values) {}
