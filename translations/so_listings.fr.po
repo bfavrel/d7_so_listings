@@ -15,8 +15,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2015-09-15 17:20+0200\n"
-"PO-Revision-Date: 2015-09-15 17:27+0100\n"
+"POT-Creation-Date: 2016-07-26 11:56+0200\n"
+"PO-Revision-Date: 2016-07-26 12:03+0100\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: French <EMAIL@ADDRESS>\n"
 "MIME-Version: 1.0\n"
@@ -121,11 +121,11 @@ msgstr "Supplanter"
 msgid "Available display types"
 msgstr "Types d'affichage disponibles"
 
-#: so_listings.admin.inc:137
+#: so_listings.admin.inc:138
 msgid "Global presets switcher"
 msgstr "Switcher de preset global"
 
-#: so_listings.admin.inc:138
+#: so_listings.admin.inc:139
 msgid ""
 "If checked user preferences for a listing display will be reflected in all "
 "listings all over the site (since the selected preset is available for a "
@@ -135,36 +135,36 @@ msgstr ""
 "sur tous les listings du site (dans la mesure où ce preset est disponible "
 "pour un listing donné)."
 
-#: so_listings.admin.inc:144
+#: so_listings.admin.inc:145
 msgid "Debug mode"
 msgstr "mode debug"
 
-#: so_listings.admin.inc:145
+#: so_listings.admin.inc:146
 msgid "Display SOL queries and results in Drupal messages zone."
 msgstr ""
 "Affiche les requêtes SOL et les résultats dans la zone de messages Drupal."
 
-#: so_listings.admin.inc:151
+#: so_listings.admin.inc:152
 msgid "Save configuration"
 msgstr "Enregistrer la configuration"
 
-#: so_listings.admin.inc:167 so_listings.filters.inc:1129
+#: so_listings.admin.inc:168 so_listings.filters.inc:1131
 msgid "Configuration has been saved."
 msgstr "La configuration a été sauvegardée."
 
-#: so_listings.admin.inc:189
+#: so_listings.admin.inc:190
 msgid "Search forms' parameters have been overrided."
 msgstr "Les paramètres des formulaires ont été supplantés."
 
-#: so_listings.admin.inc:194 so_listings.module:121
+#: so_listings.admin.inc:195 so_listings.module:121
 msgid "Contexts"
 msgstr "Contextes"
 
-#: so_listings.admin.inc:208
+#: so_listings.admin.inc:209
 msgid "Activation and priorities"
 msgstr "Activation et priorités"
 
-#: so_listings.admin.inc:209
+#: so_listings.admin.inc:210
 msgid ""
 "Higher priorities on top.<br />IMPORTANT : new contexts are discarded until "
 "this form is submitted."
@@ -172,89 +172,89 @@ msgstr ""
 "Les plus hautes priorités en haut.<br />IMPORTANT : les nouveaux contextes "
 "seront ignorés jusqu'à ce que ce formulaire soit soumis."
 
-#: so_listings.admin.inc:225;367;772;1222 so_listings.sorting.inc:138;1019
+#: so_listings.admin.inc:226;368;775;1223 so_listings.sorting.inc:138;1019
 msgid "Save"
 msgstr "Enregistrer"
 
-#: so_listings.admin.inc:278 so_listings.module:79
+#: so_listings.admin.inc:279 so_listings.module:79
 msgid "View modes"
 msgstr "Modes d'affichage"
 
-#: so_listings.admin.inc:328
+#: so_listings.admin.inc:329
 msgid "New config label"
 msgstr "Etiquette de la nouvelle configuration"
 
-#: so_listings.admin.inc:345;661 so_listings.filters.inc:484;532;568
+#: so_listings.admin.inc:346;664 so_listings.filters.inc:484;532;568
 #: so_listings.sorting.inc:119;600
 msgid "Add"
 msgstr "Ajouter"
 
-#: so_listings.admin.inc:386
+#: so_listings.admin.inc:387
 msgid "None (404)"
 msgstr "Aucune (404)"
 
-#: so_listings.admin.inc:416
+#: so_listings.admin.inc:417
 msgid "Preset : @preset"
 msgstr "Preset : @preset"
 
-#: so_listings.admin.inc:425
-msgid "Unused"
-msgstr "Inutilisé"
+#: so_listings.admin.inc:426
+msgid "Predefined in presets"
+msgstr ""
 
-#: so_listings.admin.inc:463;812;1060 so_listings.filters.inc:638;746;819
+#: so_listings.admin.inc:464;815;1063 so_listings.filters.inc:638;747;820
 #: so_listings.sorting.inc:171;479;720
 msgid "Delete"
 msgstr "Supprimer"
 
-#: so_listings.admin.inc:492
+#: so_listings.admin.inc:493
 msgid "Hard coded"
 msgstr "Codé en dur"
 
-#: so_listings.admin.inc:604 so_listings.module:91
+#: so_listings.admin.inc:607 so_listings.module:91
 msgid "Listings presets"
 msgstr "Presets des listings"
 
-#: so_listings.admin.inc:624
+#: so_listings.admin.inc:627
 msgid "configure"
 msgstr "configurer"
 
-#: so_listings.admin.inc:625;1021
+#: so_listings.admin.inc:628;1024
 msgid "delete"
 msgstr "supprimer"
 
-#: so_listings.admin.inc:642;702;1278
+#: so_listings.admin.inc:645;705;1279
 msgid "Name"
 msgstr "Nom"
 
-#: so_listings.admin.inc:648
+#: so_listings.admin.inc:651
 msgid "Machine name"
 msgstr "Nom système"
 
-#: so_listings.admin.inc:654
+#: so_listings.admin.inc:657
 msgid "Based on preset"
 msgstr "Basé sur le preset"
 
-#: so_listings.admin.inc:655
+#: so_listings.admin.inc:658
 msgid "Preset to copy parameters from."
 msgstr "Preset à partir duquel copier les paramètres."
 
-#: so_listings.admin.inc:673
+#: so_listings.admin.inc:676
 msgid "Preset id '@id' already exists."
 msgstr "L'id de preset '@id' existe déjà."
 
-#: so_listings.admin.inc:687
+#: so_listings.admin.inc:690
 msgid "Preset created.<br />It has to be configured now :"
 msgstr "Le preset a été créé.<br />Il doit maintenant être configuré :"
 
-#: so_listings.admin.inc:694
+#: so_listings.admin.inc:697
 msgid "'@preset' preset configuration"
 msgstr "Configuration du preset '@preset'"
 
-#: so_listings.admin.inc:703;711
+#: so_listings.admin.inc:706;714
 msgid "Must be in english. Will be processed by t() function later."
 msgstr "En anglais. La fonction t() sera appliquée ultérieurement."
 
-#: so_listings.admin.inc:710
+#: so_listings.admin.inc:713
 msgid ""
 "A short description of preset's features. These informations will be "
 "displayed as widget's display modes options."
@@ -262,132 +262,132 @@ msgstr ""
 "Courte description des caractéristiques du preset. Ces informations seront "
 "affichées comme options de mode d'affichage du widget."
 
-#: so_listings.admin.inc:718
+#: so_listings.admin.inc:721
 msgid "Compilator settings"
 msgstr "Paramètres du compilateur"
 
-#: so_listings.admin.inc:722
+#: so_listings.admin.inc:725
 msgid "Number of results by page"
 msgstr "Nombre de résultats par page"
 
-#: so_listings.admin.inc:723;732
+#: so_listings.admin.inc:726;735
 msgid "'0' = all"
 msgstr "'0' = tous"
 
-#: so_listings.admin.inc:731
+#: so_listings.admin.inc:734
 msgid "Number maximum of results"
 msgstr "Nombre maximum de résultats"
 
-#: so_listings.admin.inc:740
+#: so_listings.admin.inc:743
 msgid "Listing is filtered by search engine"
 msgstr "Le listing est filtré par le moteur de recherche"
 
-#: so_listings.admin.inc:746
+#: so_listings.admin.inc:749
 msgid "Listing use sorting"
 msgstr "Le listing utilise le tri"
 
-#: so_listings.admin.inc:766
+#: so_listings.admin.inc:769
 msgid "Inform modules that preset has changed"
 msgstr "Informer les modules que le preset a changé"
 
-#: so_listings.admin.inc:776;1129;1226 so_listings.filters.inc:393
+#: so_listings.admin.inc:779;1132;1227 so_listings.filters.inc:393
 #: so_listings.sorting.inc:1035
 msgid "Back"
 msgstr "Retour"
 
-#: so_listings.admin.inc:799
+#: so_listings.admin.inc:802
 msgid "Preset configuration has been saved."
 msgstr "La configuration du preset a été sauvegardée."
 
-#: so_listings.admin.inc:809
+#: so_listings.admin.inc:812
 msgid "Are you sure you want to delete the preset '@preset' ?"
 msgstr "Êtes-vous sûr de vouloir supprimer les preset '@preset' ?"
 
-#: so_listings.admin.inc:824
+#: so_listings.admin.inc:827
 msgid "Preset '@preset' has been deleted"
 msgstr "Le preset '@preset' a été supprimé."
 
-#: so_listings.admin.inc:845 so_listings.filters.inc:411
+#: so_listings.admin.inc:848 so_listings.filters.inc:411
 msgid "All"
 msgstr "Tout"
 
-#: so_listings.admin.inc:846
+#: so_listings.admin.inc:849
 msgid "Without prefix"
 msgstr "Sans préfixe"
 
-#: so_listings.admin.inc:867 so_listings.module:214
+#: so_listings.admin.inc:870 so_listings.module:214
 msgid "Filters"
 msgstr "Filtres"
 
-#: so_listings.admin.inc:874
+#: so_listings.admin.inc:877
 msgid "By prefix"
 msgstr "Par préfixe"
 
-#: so_listings.admin.inc:881
+#: so_listings.admin.inc:884
 msgid "By tags"
 msgstr "Par étiquettes"
 
-#: so_listings.admin.inc:883;1298
+#: so_listings.admin.inc:886;1299
 msgid "Keywords separated by commas."
 msgstr "Mots-clés séparés par des virgules."
 
-#: so_listings.admin.inc:890
+#: so_listings.admin.inc:893
 msgid "Tag filtering mode"
 msgstr "Mode de filtrage par étiquettes"
 
-#: so_listings.admin.inc:892
+#: so_listings.admin.inc:895
 msgid "All tags"
 msgstr "Toutes les étiquettes"
 
-#: so_listings.admin.inc:893
+#: so_listings.admin.inc:896
 msgid "At least one tag"
 msgstr "Au moins une des étiquettes"
 
-#: so_listings.admin.inc:900
+#: so_listings.admin.inc:903
 msgid "By name"
 msgstr "Par nom"
 
-#: so_listings.admin.inc:908
+#: so_listings.admin.inc:911
 msgid "Keep these values permanently"
 msgstr "Conserver ce filtrage de manière permanente"
 
-#: so_listings.admin.inc:920
+#: so_listings.admin.inc:923
 msgid "Reset"
 msgstr "Réinitialiser"
 
-#: so_listings.admin.inc:926
+#: so_listings.admin.inc:929
 msgid "Filter"
 msgstr "Filtrer"
 
-#: so_listings.admin.inc:1016;1297
+#: so_listings.admin.inc:1019;1298
 msgid "Tags"
 msgstr "Étiquettes"
 
-#: so_listings.admin.inc:1020
+#: so_listings.admin.inc:1023
 msgid "edit"
 msgstr "modifier"
 
-#: so_listings.admin.inc:1057
+#: so_listings.admin.inc:1060
 msgid "Are you sure you want to delete the listing '@listing' ?"
 msgstr "Êtes-vous sûr de vouloir supprimer le listing '@listing' ?"
 
-#: so_listings.admin.inc:1076
+#: so_listings.admin.inc:1079
 msgid "Listing '@listing' has been deleted"
 msgstr "Le listing '@listing' a été supprimé."
 
-#: so_listings.admin.inc:1088
+#: so_listings.admin.inc:1091
 msgid "New listing basic parameters"
 msgstr "Paramètres de base du nouveau listing"
 
-#: so_listings.admin.inc:1097
+#: so_listings.admin.inc:1100
 msgid "None"
 msgstr "Aucun(e)"
 
-#: so_listings.admin.inc:1106
+#: so_listings.admin.inc:1109
 msgid "Based on listing"
 msgstr "Basé sur le listing"
 
-#: so_listings.admin.inc:1107
+#: so_listings.admin.inc:1110
 msgid ""
 "New listing's parameters will be duplicated from this listing.<br />Be "
 "carreful of some of these ones may be incompatible."
@@ -395,32 +395,32 @@ msgstr ""
 "Les paramètres du nouveau listing seront copiés à partir de ce listing.<br /"
 ">Attentions, certains d'entre-eux sont suceptibles d'être incompatibles."
 
-#: so_listings.admin.inc:1125
+#: so_listings.admin.inc:1128
 msgid "Create"
 msgstr "Créer"
 
-#: so_listings.admin.inc:1197
+#: so_listings.admin.inc:1198
 msgid "Listing '@listing' has been created."
 msgstr "Le listing '@listing' a été créé."
 
-#: so_listings.admin.inc:1198
+#: so_listings.admin.inc:1199
 msgid "Filters have to be set now, in order to listing can be displayed."
 msgstr "Afin que le listing soit affiché, les filtres doivent être publiés."
 
-#: so_listings.admin.inc:1206 so_listings.filters.inc:261
-#: so_listings.search.inc:353 so_listings.sorting.inc:341
+#: so_listings.admin.inc:1207 so_listings.filters.inc:261
+#: so_listings.search.inc:357 so_listings.sorting.inc:341
 msgid "Edit listing '@listing'"
 msgstr "Modification du listing '@listing'"
 
-#: so_listings.admin.inc:1211
+#: so_listings.admin.inc:1212
 msgid "Listing basic parameters"
 msgstr "Paramètres de base du listing"
 
-#: so_listings.admin.inc:1260
+#: so_listings.admin.inc:1261
 msgid "Listing '@listing' has been saved."
 msgstr "Le listing '@listing' a été sauvegardé."
 
-#: so_listings.admin.inc:1263
+#: so_listings.admin.inc:1264
 msgid ""
 "Data sources have changed. Filters have to be updated, in order to reflect "
 "the changes."
@@ -428,17 +428,17 @@ msgstr ""
 "Les sources de données ont été modifiées. Les filtres doivent être mis à "
 "jour afin de refléter les changements."
 
-#: so_listings.admin.inc:1264
+#: so_listings.admin.inc:1265
 msgid "Sorting should be checked also."
 msgstr "Les tris devraient être également contrôlés."
 
-#: so_listings.admin.inc:1279
+#: so_listings.admin.inc:1280
 msgid "Only displayed in listings overviews and in selectbox of widget."
 msgstr ""
 "Uniquement affiché dans la liste synthétique des listings, et dans la liste "
 "déroulante du widget."
 
-#: so_listings.admin.inc:1280
+#: so_listings.admin.inc:1281
 msgid ""
 "Name can be prefixed with a short value between braces (usually its "
 "language), in order to facilitate sorting and filtering in overview. Ex : "
@@ -448,30 +448,30 @@ msgstr ""
 "sa langue), de façon à faciliter le tri et le filtrage dans la vue "
 "d'ensemble des listings. Ex : \"[fr] Hôtels\""
 
-#: so_listings.admin.inc:1288 so_listings.module:2247
+#: so_listings.admin.inc:1289 so_listings.module:2331
 msgid "Title"
 msgstr "Titre"
 
-#: so_listings.admin.inc:1289
+#: so_listings.admin.inc:1290
 msgid "Optionally displayed in rendered widget."
 msgstr "Affiché dans le rendu du widget (optionnel)."
 
-#: so_listings.admin.inc:1298
+#: so_listings.admin.inc:1299
 msgid ""
 "If a keyword contains itself a comma, it must be surrounded by double quotes."
 msgstr ""
 "Si un mot-clé contient lui-même une virgule, il doit être placé entre "
 "guillemets."
 
-#: so_listings.admin.inc:1306
+#: so_listings.admin.inc:1307
 msgid "Description"
 msgstr "Description"
 
-#: so_listings.admin.inc:1314
+#: so_listings.admin.inc:1315
 msgid "Parent listing"
 msgstr "Listing parent"
 
-#: so_listings.admin.inc:1315
+#: so_listings.admin.inc:1316
 msgid ""
 "If checked, listing's nodes will be tied with this listing, even if they "
 "exist in another one."
@@ -479,11 +479,11 @@ msgstr ""
 "Si coché, les nodes de ce listing seront liés à celui-ci, même dans le cas "
 "où ces nodes existent dans un autre listing."
 
-#: so_listings.admin.inc:1322
+#: so_listings.admin.inc:1323
 msgid "Nodes sources"
 msgstr "Sources des nodes"
 
-#: so_listings.admin.inc:1368
+#: so_listings.admin.inc:1369
 msgid "@module settings"
 msgstr "Paramètres de @module"
 
@@ -661,83 +661,83 @@ msgstr "Ajouter une condition personnalisée"
 msgid "Add a predefined condition"
 msgstr "Ajouter une condition prédéfinie"
 
-#: so_listings.filters.inc:629;737;810
+#: so_listings.filters.inc:629;738;811
 msgid "Weight"
 msgstr "Poids"
 
-#: so_listings.filters.inc:695;784;898
+#: so_listings.filters.inc:696;785;900
 msgid "AND"
 msgstr "ET"
 
-#: so_listings.filters.inc:696;785;899
+#: so_listings.filters.inc:697;786;901
 msgid "OR"
 msgstr "OU"
 
-#: so_listings.filters.inc:856
+#: so_listings.filters.inc:858
 msgid "Save parameters"
 msgstr "Sauver les paramètres"
 
-#: so_listings.filters.inc:865
+#: so_listings.filters.inc:867
 msgid "Condition"
 msgstr "Condition"
 
-#: so_listings.filters.inc:949
+#: so_listings.filters.inc:951
 msgid "Arguments"
 msgstr "Arguments"
 
-#: so_listings.filters.inc:976
+#: so_listings.filters.inc:978
 msgid "You must choose a field"
 msgstr "Vous devez choisir un champ"
 
-#: so_listings.filters.inc:980
+#: so_listings.filters.inc:982
 msgid "You must choose a clause"
 msgstr "Vous devez choisir une clause"
 
-#: so_listings.filters.inc:1182
+#: so_listings.filters.inc:1184
 msgid "Filters have been applied on listing."
 msgstr "Les filtres ont été appliqués au listing."
 
-#: so_listings.filters.inc:1663
+#: so_listings.filters.inc:1680
 msgid "when the user views the page"
 msgstr "la date à laquelle l'utilisateur consulte la page"
 
-#: so_listings.filters.inc:1664
+#: so_listings.filters.inc:1681
 msgid "a fixed date"
 msgstr "une date fixe"
 
-#: so_listings.search.inc:332
+#: so_listings.search.inc:336
 msgid "shared"
 msgstr "partagé"
 
-#: so_listings.search.inc:591
+#: so_listings.search.inc:602
 msgid "Search field '@field'"
 msgstr ""
 
-#: so_listings.search.inc:643
+#: so_listings.search.inc:654
 msgid "Search results in this fields also"
 msgstr "Rechercher les résultats également dans ces champs"
 
-#: so_listings.search.inc:655
+#: so_listings.search.inc:666
 msgid "Results matching"
 msgstr "Correspondance des résultats"
 
-#: so_listings.search.inc:658
+#: so_listings.search.inc:669
 msgid "Results contain the term"
 msgstr "Les résultats contiennent le terme"
 
-#: so_listings.search.inc:659
+#: so_listings.search.inc:670
 msgid "Results start by the term"
 msgstr "Les résultats commencent par le terme"
 
-#: so_listings.search.inc:660
+#: so_listings.search.inc:671
 msgid "Results match the term"
 msgstr "Les résultats correspondent exactement au terme"
 
-#: so_listings.search.inc:670
+#: so_listings.search.inc:681
 msgid "Use autocompletion"
 msgstr "Utiliser l'autocomplétion"
 
-#: so_listings.search.inc:673
+#: so_listings.search.inc:684
 msgid ""
 "Minimum number of letters to type before triggering.<br />'0' = "
 "autocompletion disabled"
@@ -745,79 +745,79 @@ msgstr ""
 "Nombre minimum de lettres à taper avant déclenchement.<br />'0' = "
 "autocomplétion désactivée"
 
-#: so_listings.search.inc:682
+#: so_listings.search.inc:693
 msgid "Results have to be..."
 msgstr "Les résultats doivent être..."
 
-#: so_listings.search.inc:684
+#: so_listings.search.inc:695
 msgid "equal at entered value"
 msgstr "égaux à la valeur entrée"
 
-#: so_listings.search.inc:685
+#: so_listings.search.inc:696
 msgid "different from entered value"
 msgstr "différents de la valeur entrée"
 
-#: so_listings.search.inc:686
+#: so_listings.search.inc:697
 msgid "lower than entered value"
 msgstr "inférieurs à la valeur entrée"
 
-#: so_listings.search.inc:687
+#: so_listings.search.inc:698
 msgid "lower or equal than entered value"
 msgstr "inférieurs ou égaux à la valeur entrée"
 
-#: so_listings.search.inc:688
+#: so_listings.search.inc:699
 msgid "greater than entered value"
 msgstr "supérieurs à la valeur entrée"
 
-#: so_listings.search.inc:689
+#: so_listings.search.inc:700
 msgid "greater or equal than entered value"
 msgstr "supérieurs ou égaux à la valeur entrée"
 
-#: so_listings.search.inc:703
+#: so_listings.search.inc:714
 msgid "Result mode"
 msgstr "Mode des résultats"
 
-#: so_listings.search.inc:706
+#: so_listings.search.inc:717
 msgid "Results have to match at least one selected option"
 msgstr ""
 "Les résultats doivent correspondre à au moins une des valeurs sélectionnés"
 
-#: so_listings.search.inc:707
+#: so_listings.search.inc:718
 msgid "Results have to match all selected options"
 msgstr "Les résultats doivent correspondre à toutes les valeurs sélectionnés"
 
-#: so_listings.search.inc:714
+#: so_listings.search.inc:725
 msgid ""
 "For a given selected option, results have to match its whole set of values"
 msgstr ""
 "Pour une option donnée, les résultats doivent correspondre à l'ensemble de "
 "ses valeurs"
 
-#: so_listings.search.inc:730
+#: so_listings.search.inc:741
 msgid "Options language"
 msgstr "Langue des options"
 
-#: so_listings.search.inc:741
+#: so_listings.search.inc:752
 msgid "Show the results which"
 msgstr "Montrer les résultats qui"
 
-#: so_listings.search.inc:744
+#: so_listings.search.inc:755
 msgid "have their both dates surrounding the searched period"
 msgstr "ont des dates encadrant la période recherchée"
 
-#: so_listings.search.inc:745
+#: so_listings.search.inc:756
 msgid "have at least their start date in the searched period"
 msgstr "ont au moins leur date de début dans la période recherchée"
 
-#: so_listings.search.inc:746
+#: so_listings.search.inc:757
 msgid "have at least their end date in the searched period"
 msgstr "ont au moins leur date de fin dans la période recherchée"
 
-#: so_listings.search.inc:747
+#: so_listings.search.inc:758
 msgid "have their both dates surrounded by the searched period"
 msgstr "ont leur deux dates encadrées par la période recherchée"
 
-#: so_listings.search.inc:750
+#: so_listings.search.inc:761
 msgid ""
 "last option results are necessarily included in those of its two preceding "
 "options.<br />Hence, it is only applicable as a constraint if they aren't "
@@ -1044,94 +1044,131 @@ msgstr ""
 "Editer les fonctionnalités avancées, telles que les clauses personnalisées "
 "de tris, etc."
 
-#: so_listings.module:627;661
+#: so_listings.module:628;662
 msgid "Home"
 msgstr "Accueil"
 
-#: so_listings.module:715
+#: so_listings.module:716
 msgid "Change mode"
 msgstr "Changer de mode"
 
-#: so_listings.module:743
+#: so_listings.module:744
 msgid "default"
 msgstr "défaut"
 
-#: so_listings.module:1032
+#: so_listings.module:1042
 msgid "Default"
 msgstr "Par défaut"
 
-#: so_listings.module:1105
+#: so_listings.module:1115
 msgid "Display mode"
 msgstr "Mode d'affichage"
 
-#: so_listings.module:1237
+#: so_listings.module:1247
 msgid "Set view mode to '@vm'"
 msgstr "Paramétrer le view mode sur '@vm'"
 
-#: so_listings.module:1900
+#: so_listings.module:1703
+msgid ""
+"Filters for this listing have not been set. Please edit the listing and "
+"publish filters."
+msgstr ""
+"Les filtres de ce listing n'ont pas été paramétrés. Veuillez éditer le "
+"listing et publier les filtres."
+
+#: so_listings.module:1982
 msgid "compacted"
 msgstr "Compact"
 
-#: so_listings.module:1903
+#: so_listings.module:1985
 msgid "expanded"
 msgstr "Expansé"
 
-#: so_listings.module:1968
+#: so_listings.module:2052
 msgid "Standard listing"
 msgstr "Listing standard"
 
-#: so_listings.module:1971
+#: so_listings.module:2055
 msgid "Standard search"
 msgstr "Recherche standard"
 
-#: so_listings.module:1983
+#: so_listings.module:2067
 msgid "Title by ascending alphabetical order"
 msgstr "Titre par ordre alphabétique ascendant"
 
-#: so_listings.module:1989
+#: so_listings.module:2073
 msgid "Title by descending alphabetical order"
 msgstr "Titre par ordre alphabétique descendant"
 
-#: so_listings.module:2154
+#: so_listings.module:2238
 msgid "Nodes of type"
 msgstr "Nodes du type"
 
-#: so_listings.module:2168
+#: so_listings.module:2252
 msgid "Display listing"
 msgstr "Afficher le listing"
 
-#: so_listings.module:2185
+#: so_listings.module:2269
 msgid "Nodes list display type (template)"
 msgstr "Type d'affichage des listes de nodes (template)"
 
-#: so_listings.module:2192
+#: so_listings.module:2276
 msgid "Use mode defined in each node"
 msgstr "Utiliser le mode défini pour chaque node"
 
-#: so_listings.module:2201
+#: so_listings.module:2285
 msgid "Nodes' view mode"
 msgstr "View mode des nodes"
 
-#: so_listings.module:2208
+#: so_listings.module:2292
 msgid "Display search form"
 msgstr "Afficher le moteur de recherche"
 
-#: so_listings.module:2214
+#: so_listings.module:2298
 msgid "Display listing's title"
 msgstr "Afficher le titre du listing"
 
-#: so_listings.module:2220
+#: so_listings.module:2304
 msgid "Use pager"
 msgstr "Utiliser un pager"
 
-#: so_listings.module:2226
+#: so_listings.module:2310
 msgid "Use AJAX"
 msgstr "Utiliser AJAX"
 
-#: so_listings.module:2232
+#: so_listings.module:2316
 msgid "Provide listing URL and breadcrumb infos to the standalone node"
 msgstr ""
 "Fournir l'URL du listing ainsi que les informations de breadcrumb aux nodes"
+
+#: so_listings.module:2350
+msgid "Nodes publishing options"
+msgstr "Options de publication des nodes"
+
+#: so_listings.module:2361
+msgid "Promoted to front page"
+msgstr "Promu en page d'accueil"
+
+#: so_listings.module:2362
+msgid "Sticky at top of lists"
+msgstr "Epinglé en haut des listes"
+
+#: so_listings.module:2373
+msgid ""
+"Checked options of each clause are considered as mandatory conditions.<br /"
+">In order to make optional conditions, use multiple clauses."
+msgstr ""
+"Les options cochées pour chaque clause sont considérées comme des conditions "
+"<em>sine qua non</em>.<br />Pour créer des conditions optionnelles, il est "
+"nécessaire d'utiliser plusieurs clauses."
+
+#: so_listings.module:1760
+msgid "SO Listings"
+msgstr "SO Listings"
+
+#: so_listings.module:1760
+msgid "Sorting while() has looped on listing \"@name\" (@lid)"
+msgstr ""
 
 #: so_listings.module:49;144;154;271 so_listings.info:0
 msgid "Listings"
@@ -1169,23 +1206,23 @@ msgstr "Formulaire de recherche"
 msgid "Create a clause"
 msgstr "Créer une clause"
 
-#: so_listings.install:313
+#: so_listings.install:315
 msgid "The table 'so_listings_map' has been created"
 msgstr ""
 
-#: so_listings.install:323
+#: so_listings.install:325
 msgid "The table 'so_listings_map' has been modified"
 msgstr ""
 
-#: so_listings.install:355
+#: so_listings.install:357
 msgid "The table 'so_listings_view_modes' has been created"
 msgstr ""
 
-#: so_listings.install:371
+#: so_listings.install:373
 msgid "The column 'sorts' has been renamed to 'sorting'"
 msgstr ""
 
-#: so_listings.install:440
+#: so_listings.install:442
 msgid "The table 'so_listings_tags' has been created"
 msgstr ""
 

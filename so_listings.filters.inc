@@ -1242,14 +1242,19 @@ function _so_listings_filters_parse_clauses($definition, &$query, $source, $clau
 
             } elseif(array_key_exists('callback', $module_clause) && $module_clause['cache'] == true) { // callback statique
 
+                $module_settings = array_key_exists($clause_infos[0], $definition->params['modules_settings']) ?
+                                   $definition->params['modules_settings'][$clause_infos[0]] :
+                                   array()
+                ;
+
+                $module_settings += !empty($clause['settings']) ? $clause['settings'] : array();
+
                 $function = $module_clause['callback'];
                 $tmp_query = so_listings_init_query(false);
                 $function(
                     $tmp_query,
                     $definition->id,
-                    array_key_exists($clause_infos[0], $definition->params['modules_settings']) ?
-                        $definition->params['modules_settings'][$clause_infos[0]] :
-                        array()
+                    $module_settings
                 );
 
                 $query['#context'] = array_merge($query['#context'], $tmp_query['#context']);

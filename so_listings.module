@@ -2333,11 +2333,63 @@ function node_so_forms($module, $id) {
                 'callbacks' => array(
                     'configuration' => 'so_listings_search_field_configuration',
                 ),
+                'settings' => array(
+                    'publication_options' => array(),
+                ),
             ),
         ),
     );
 
     return $fields;
+}
+
+function node_so_listings_filter() {
+
+    return array(
+        'node_publishing_options' => array(
+            'label' => t("Nodes publishing options"),
+            'callback' => 'node_so_listings_filter_callback',
+            'form' => 'node_so_listings_filter_settings',
+            'cache' => true,
+        ),
+    );
+}
+
+function node_so_listings_filter_settings($default_values) {
+
+    $options = array(
+        'promote' => t("Promoted to front page"),
+        'sticky' => t("Sticky at top of lists"),
+    );
+
+    // Module "Custom Publishing Options"
+    if(module_exists('custom_pub')) {
+        $options += custom_pub_types_list();
+    }
+
+    return array(
+        'publishing_options_filter' => array(
+            '#type' => 'checkboxes',
+            '#description' => t("Checked options of each clause are considered as mandatory conditions.<br />In order to make optional conditions, use multiple clauses."),
+            '#options' => $options,
+            '#default_value' => !empty($default_values) ? $default_values['publishing_options_filter'] : array(),
+        ),
+    );
+}
+
+function node_so_listings_filter_callback(&$query, $lid, &$data, $sources = null) {
+
+    $selected_options = array_filter($data['publishing_options_filter']);
+    $where = array();
+
+    foreach($selected_options as $option) {
+
+        $where[] = "n." . $option . "=1";
+    }
+
+    if(!empty($where)) {
+        $query['where'][] = "(" . implode(' AND ', $where) . ")";
+    }
 }
 
 /*
