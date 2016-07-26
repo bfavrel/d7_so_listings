@@ -20,7 +20,6 @@ function so_listings_kiosque_menu() {
 function so_listings_kiosque_settings_form($form, &$form_state) {
 
     $settings = variable_get('so_listings_kiosque_settings', array(
-        'preset' => 'default',
         'node_delay' => 3000,
     ));
 
@@ -32,13 +31,6 @@ function so_listings_kiosque_settings_form($form, &$form_state) {
     }
 
     $form = array(
-
-        'preset' => array(
-            '#type' => 'select',
-            '#title' => t("Preset to use for listings"),
-            '#options' => $presets_options,
-            '#default_value' => $settings['preset'],
-        ),
 
         'node_delay' => array(
             '#type' => 'textfield',
@@ -68,6 +60,15 @@ function so_listings_kiosque_settings_form_submit($form, &$form_state) {
     variable_set('so_listings_kiosque_settings', $settings);
 
     drupal_set_message(t("Settings have been saved."));
+}
+
+function so_listings_kiosque_so_listings_preset(&$form, $default_values) {
+
+    $form['use'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Use this preset in kiosque"),
+        '#default_value' => !empty($default_values) ? $default_values['use'] : 0,
+    );
 }
 
 /*
@@ -100,12 +101,29 @@ function so_listings_kiosque_kiosque_actor_configure($type, $configuration, $con
         $listing_options[$listing->id] = $listing->name;
     }
 
+    $presets = so_listings_get_presets();
+    $presets_options = array();
+
+    foreach($presets as $preset) {
+
+        if(drupal_array_get_nested_value($preset->params, array('so_listings_kiosque', 'use')) == true) {
+            $presets_options[$preset->id] = t($preset->label) . (!empty($preset->description) ? " (" . t($preset->description) . ")" : "");
+        }
+    }
+
     $form = array(
         'lid' => array(
             '#type' => 'select',
             '#title' => t("Listing to display"),
             '#options' => $listing_options,
             '#default_value' => $configuration['lid'],
+        ),
+
+        'preset' => array(
+            '#type' => 'select',
+            '#title' => t("Display type"),
+            '#options' => $presets_options,
+            '#default_value' => $configuration['preset'],
         ),
 
         'title' => array(
@@ -188,7 +206,7 @@ function so_listings_kiosque_kiosque_actor_content(&$content, &$title, $type, $c
         );
     }
 
-    $listing = so_listings_listing($configuration['lid'], $settings['preset'], $options, $query);
+    $listing = so_listings_listing($configuration['lid'], $configuration['preset'], $options, $query);
 
     $num_nodes = count($listing['nodes']);
 
