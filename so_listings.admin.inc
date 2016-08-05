@@ -140,6 +140,13 @@ function so_listings_settings_form($form, &$form_state) {
         '#default_value' => $settings['global_switcher'],
     );
 
+    $form['settings']['join_node_only'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Add 'entity_type=node' condition in MySQL joins"),
+        '#description' => t("For particular projects where some fields are shared between several entities types (typically nodes and users) 'entity_type' condition must be added in order to avoid confusion between identical 'entitiy_id' belonging to different 'entity_type'."),
+        '#default_value' => $settings['join_node_only'],
+    );
+
     $form['settings']['debug'] = array(
         '#type' => 'checkbox',
         '#title' => t("Debug mode"),

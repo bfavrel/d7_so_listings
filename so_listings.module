@@ -2135,7 +2135,15 @@ function so_listings_prepare_query_fragment_data($field_name = null) {
         $fields = $fragment_data->infos['storage']['details']['sql']['FIELD_LOAD_CURRENT'][$fragment_data->table];
 
         if (!isset($tables_pool[$fragment_data->table])) {
-            $fragment_data->joins[] = "LEFT JOIN {" . $fragment_data->table . "} AS " . $fragment_data->table . " ON " . $fragment_data->table . ".entity_id=n.nid";
+
+            $settings = variable_get('sol_settings', array());
+            $node_filter = "";
+
+            if(array_key_exists('join_node_only', $settings) && $settings['join_node_only'] == true) {
+                $node_filter = " AND " . $fragment_data->table . ".entity_type='node'";
+            }
+
+            $fragment_data->joins[] = "LEFT JOIN {" . $fragment_data->table . "} AS " . $fragment_data->table . " ON " . $fragment_data->table . ".entity_id=n.nid" . $node_filter;
 
             $tables_pool[$fragment_data->table] = 1;
         }
