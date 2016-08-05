@@ -77,7 +77,9 @@ function so_listings_field_widget_form(&$form, &$form_state, $field, $instance, 
         $default_values = unserialize($items[$delta]['presets']);
 
         $listings = so_listings_get_listings_definitions();
-        $listings_options = array();
+        $listings_options = array(
+            0 => "- " . t("Select") . " -",
+        );
 
         foreach ($listings as $listing) {
             $listings_options[$listing->id] = $listing->name;
@@ -107,39 +109,59 @@ function so_listings_field_widget_form(&$form, &$form_state, $field, $instance, 
 
             'presets_table' => array(
                 '#type' => 'container',
-                '#theme' => 'so_listings_widget_presets',
 
-                'presets' => array(
-                    '#type' => 'checkboxes',
-                    '#title' => t("Available display modes"),
-                    '#description' => t("If several display modes are selected, the first one will be used by default.<br />Users will be able to switch between them."),
-                    '#default_value' => array_keys((array)$default_values),
-                ),
+                'presets' => array(),
 
                 'weight' => array(),
             ),
         );
 
-        $weight = -50;
+        if(count($allowed_presets) > 1) {
 
-        foreach ($presets_options as $preset => $label) {
+            $element['presets_table']['#theme'] = 'so_listings_widget_presets';
 
-            $presets_options[$preset] = '';
+            $element['presets_table']['presets'] = array(
+                '#type' => 'checkboxes',
+                '#title' => t("Available display modes"),
+                '#description' => t("If several display modes are selected, the first one will be used by default.<br />Users will be able to switch between them."),
+                '#default_value' => array_keys((array)$default_values),
+            );
 
-            $element['presets_table']['label'][$preset] = array(
-                '#markup' => $label,
+            $weight = -50;
+
+            foreach ($presets_options as $preset => $label) {
+
+                $presets_options[$preset] = '';
+
+                $element['presets_table']['label'][$preset] = array(
+                    '#markup' => $label,
+                );
+
+                $element['presets_table']['weight'][$preset] = array(
+                    '#type' => 'weight',
+                    '#delta' => 50,
+                    '#default_value' => $weight,
+                );
+
+                $weight++;
+            }
+
+            $element['presets_table']['presets']['#options'] = $presets_options;
+
+        } else {
+
+            $preset = reset($allowed_presets);
+
+            $element['presets_table']['presets'][$preset] = array(
+                '#type' => 'value',
+                '#value' => array($preset),
             );
 
             $element['presets_table']['weight'][$preset] = array(
-                '#type' => 'weight',
-                '#delta' => 50,
-                '#default_value' => $weight,
+                '#type' => 'value',
+                '#value' => 0,
             );
-
-            $weight++;
         }
-
-        $element['presets_table']['presets']['#options'] = $presets_options;
 
         return $element;
     }
