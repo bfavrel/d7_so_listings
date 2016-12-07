@@ -1337,6 +1337,22 @@ function _so_listings_filters_query_single_argument(&$query, $field, $condition,
                 $argument = null;
                 $placeholder = "CURDATE()";
             }
+
+            switch($args['select']) {
+                case 'fixed':
+                    $argument = $args['fixed'];
+                    break;
+
+                case 'relative_after':
+                    $argument = null;
+                    $placeholder = "DATE_ADD(CURDATE(), INTERVAL " . $args['relative_after'] . " DAY)";
+                    break;
+
+                case 'now':
+                    $argument = null;
+                    $placeholder = "CURDATE()";
+                    break;
+            }
             break;
 
         case 'text_textfield':
@@ -1679,20 +1695,35 @@ function _so_listings_filters_arguments_single_element(&$element, $args, $field_
                     '#options' => array(
                         'now' => t("when the user views the page"),
                         'fixed' => t("a fixed date"),
+                        'relative_after' => t("N days after the user views the page"),
                     ),
                     '#default_value' => (array)$args['select'],
                 ),
 
-                'input' => array(
+                'fixed' => array(
                     '#type' => 'date_popup',
                     '#title' => null,
                     '#date_format' => 'd/m/Y',
                     '#date_year_range' => '-3:+3',
                     '#date_label_position' => 'none',
-                    '#default_value' => $args['input'],
+                    '#default_value' => $args['fixed'],
                     '#states' => array(
                         'visible' => array(
                             'select#date_select_' . $clause_id => array('value' => 'fixed'),
+                        ),
+                    ),
+                ),
+
+                'relative_after' => array(
+                    '#type' => 'textfield',
+                    '#title' => null,
+                    '#default_value' => $args['relative_after'],
+                    '#field_prefix' => "+",
+                    '#field_suffix' => " " . t("day(s)"),
+                    '#size' => 3,
+                    '#states' => array(
+                        'visible' => array(
+                            'select#date_select_' . $clause_id => array('value' => 'relative_after'),
                         ),
                     ),
                 ),

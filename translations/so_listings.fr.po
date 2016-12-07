@@ -705,6 +705,10 @@ msgstr "la date à laquelle l'utilisateur consulte la page"
 msgid "a fixed date"
 msgstr "une date fixe"
 
+#: so_listings.filters.inc:1698
+msgid "N days after the user views the page"
+msgstr "N jours après la date à laquelle l'utilisateur consulte la page"
+
 #: so_listings.search.inc:336
 msgid "shared"
 msgstr "partagé"
