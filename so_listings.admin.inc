@@ -957,13 +957,17 @@ function so_listings_overview_form($form, &$form_state) {
         $table = key($field_data['storage']['details']['sql']['FIELD_LOAD_CURRENT']);
 
         $nodes_results = db_query(
-            "SELECT t.entity_id AS nid, t." . $lid_field . " AS lid, n.title, n.language FROM {" . $table . "} AS t
+            "SELECT t.entity_type, t.entity_id AS nid, t." . $lid_field . " AS lid, n.title, n.language FROM {" . $table . "} AS t
             LEFT JOIN {node} AS n ON n.nid=t.entity_id
             ORDER BY t." . $lid_field . " ASC, n.title ASC"
         );
 
         while($row = $nodes_results->fetchObject()) {
-            $usages[$row->lid][] = l("(" . $row->language . ") " . $row->title, drupal_get_path_alias('node/' . $row->nid), array('attributes' => array('target' => '_blank')));
+            if($row->entity_type == 'node') {
+                $usages[$row->lid][] = l("(" . $row->language . ") " . $row->title, drupal_get_path_alias('node/' . $row->nid), array('attributes' => array('target' => '_blank')));
+            } else {
+                $usages[$row->lid][] = "<em>" . strtoupper(str_replace('_', ' ', $row->entity_type)) . "</em>";
+            }
         }
     }
 
