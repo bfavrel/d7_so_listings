@@ -137,15 +137,27 @@ function theme_so_listings_filters_add_clause($vars) {
 
     $element = $vars['element'];
 
-    $rows = array(
-        array(
-            'data' => array(
-                render($element['clause']),
-                render($element['add']),
+    if(array_key_exists('message', $element)) {
+        $rows = array(
+            array(
+                'data' => array(
+                    render($element['message']),
+                ),
+            )
+        );
+
+    } else {
+
+        $rows = array(
+            array(
+                'data' => array(
+                    render($element['clause']),
+                    render($element['add']),
+                ),
+                'class' => array('so_listing_filters_clause'),
             ),
-            'class' => array('so_listing_filters_clause'),
-        ),
-    );
+        );
+    }
 
     $header = array(
         array(

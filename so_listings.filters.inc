@@ -353,12 +353,12 @@ function so_listings_filters_form($form, &$form_state, $lid) {
     );
 
     $filters_index = 0;
-
-    if(!empty($common_fields_pool)) {
-        so_listings_filters_filters_element($form['global_filters'], $form_state['values']['global_filters'], $filters_index++, $filters['global_filters'], $common_fields_pool);
-    } else {
-        $form['global_filters']['message'] = array('#markup' => "- " . t("These sources have no common fields to filter") . " -");
-    }
+so_listings_filters_filters_element($form['global_filters'], $form_state['values']['global_filters'], $filters_index++, $filters['global_filters'], $common_fields_pool);
+//    if(!empty($common_fields_pool)) {
+//        so_listings_filters_filters_element($form['global_filters'], $form_state['values']['global_filters'], $filters_index++, $filters['global_filters'], $common_fields_pool);
+//    } else {
+//        $form['global_filters']['message'] = array('#markup' => "- " . t("These sources have no common fields to filter") . " -");
+//    }
 
     foreach($sources as $source) {
         $source_infos = explode(':', $source); // 0:module, 1:group, 2:id
@@ -583,6 +583,10 @@ function so_listings_filters_filters_element(&$element, $values, $filters_index,
             ),
         ),
     );
+
+    if(empty($source_fields_pool)) {
+        $element['sql_generator']['add_clause']['message'] = array('#markup' => "- " . t("These sources have no common fields to filter") . " -");
+    }
 
     if(count($predefined_options) == 1) {
         unset($element['sql_generator']['add_predefined']);
