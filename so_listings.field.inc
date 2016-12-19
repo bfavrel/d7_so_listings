@@ -38,6 +38,15 @@ function so_listings_field_instance_settings_form($field, $instance) {
                 '#options' => $presets_options,
                 '#default_value' => isset($instance['settings']['presets']) ? $instance['settings']['presets'] : array($instance['widget']['settings']['presets']),
             ),
+
+            'tags' => array(
+                '#type' => 'textfield',
+                '#title' => t("Filter listings by tags"),
+                '#autocomplete_path' => 'admin/structure/so_listings/autocomplete/tags',
+                '#description' => t("Keywords separated by commas."),
+                '#default_value' => isset($instance['settings']['tags']) ? $instance['settings']['tags'] : '',
+                '#size' => 40,
+            ),
         );
 
         return $form;
@@ -76,13 +85,27 @@ function so_listings_field_widget_form(&$form, &$form_state, $field, $instance, 
 
         $default_values = unserialize($items[$delta]['presets']);
 
-        $listings = so_listings_get_listings_definitions();
+        $listings = so_listings_get_listings_definitions(null, true);
+
         $listings_options = array(
             0 => "- " . t("Select") . " -",
         );
 
+        if(!empty($instance['settings']['tags'])) {
+            $tags = explode(',', $instance['settings']['tags']);
+        } else {
+            $tags = '';
+        }
+
         foreach ($listings as $listing) {
-            $listings_options[$listing->id] = $listing->name;
+            if(!empty($tags)) {
+                $listing_tags = explode(',', $listing->tags);
+                if(!empty(array_intersect($listing_tags, $tags))) {
+                    $listings_options[$listing->id] = $listing->name;
+                }
+            } else {
+                $listings_options[$listing->id] = $listing->name;
+            }
         }
 
         $available_presets = so_listings_get_presets();
