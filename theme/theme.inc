@@ -357,7 +357,7 @@ function theme_so_listings_overview($vars) {
     }
 
     $headers = array(
-        t("Name") . " (<img class='so_listings_tags' src='" . base_path() . "misc/help.png' /> = " . t("tags list") . ")",
+        t("Name") . " (<img class='so_listings_tags' src='" . base_path() . drupal_get_path('module', 'so_listings') . "/images/help.png' /> = " . t("tags list") . ")",
         t("Description"),
         t("Usages"),
         t("Operations"),

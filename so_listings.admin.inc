@@ -1027,7 +1027,7 @@ function so_listings_overview_form($form, &$form_state) {
 
         $form['overview'][$id] = array(
             'name' => array('#markup' => $listing->name),
-            'tags' => !empty($listing->tags) ? array('#markup' => " <img class='so_listings_tags' src='" . base_path() . "misc/help.png' title='" . t("Tags") . " : " . htmlentities($listing->tags, ENT_QUOTES) . "' />") : "",
+            'tags' => !empty($listing->tags) ? array('#markup' => " <img class='so_listings_tags' src='" . base_path() . drupal_get_path('module', 'so_listings') . "/images/help.png' title='" . t("Tags") . " : " . htmlentities($listing->tags, ENT_QUOTES) . "' />") : "",
             'description' => array('#markup' => $listing->description),
             'usages' => array_key_exists($listing->id, $usages) ? array('#markup' => implode('<br />', $usages[$listing->id])) : array(),
             'operations' => array(
