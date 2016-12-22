@@ -1449,6 +1449,8 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
         $options['limit_to'] = 10000;
     }
 
+    $options['count'] = $options['so_listings']['display_count'];
+
     if ($options['so_listings']['pager'] == true) {
         $current_page = array_key_exists('page', $options) && is_numeric($options['page']) ? $options['page'] : pager_find_page($listing_index);
         $options['limit_from'] = $current_page * $options['limit_num'];
@@ -2293,6 +2295,12 @@ function so_listings_so_listings_preset(&$form, $default_values) {
         '#title' => t("Nodes' view mode"),
         '#options' => $view_modes_options,
         '#default_value' => $default_values['nodes_view_mode'],
+    );
+
+    $form['display_count'] = array(
+        '#type' => 'checkbox',
+        '#title' => t("Display count results"),
+        '#default_value' => $default_values['display_count'],
     );
 
     $form['search_form'] = array(
