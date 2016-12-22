@@ -1449,7 +1449,8 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
         $options['limit_to'] = 10000;
     }
 
-    $options['count'] = $options['so_listings']['display_count'];
+    // 'true' : for retro-compatibility
+    $options['count'] = array_key_exists('display_count', $options['so_listings']) ? $options['so_listings']['display_count'] : true;
 
     if ($options['so_listings']['pager'] == true) {
         $current_page = array_key_exists('page', $options) && is_numeric($options['page']) ? $options['page'] : pager_find_page($listing_index);
