@@ -100,7 +100,7 @@ function so_listings_field_widget_form(&$form, &$form_state, $field, $instance, 
         foreach ($listings as $listing) {
             if(!empty($tags)) {
                 $listing_tags = explode(',', $listing->tags);
-                if(!empty(array_intersect($listing_tags, $tags))) {
+                if(count(array_intersect($listing_tags, $tags)) > 0) {
                     $listings_options[$listing->id] = $listing->name;
                 }
             } else {
