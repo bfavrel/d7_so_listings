@@ -49,7 +49,7 @@ function so_listings_geoloc_preprocess_page(&$vars) {
 
     if(so_listings_geoloc_is_mobile() == true
         && path_is_admin(current_path()) == false) {
-        drupal_add_js(drupal_get_path('module', 'so_listings_geoloc') . '/js/so_listings_geoloc.js', array('scope' => 'footer'));
+        drupal_add_js(drupal_get_path('module', 'so_listings_geoloc') . '/js/so_listings_geoloc.js', array('group' => JS_LIBRARY, 'weight' => 1000));
     }
 }
 
