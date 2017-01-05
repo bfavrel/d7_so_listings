@@ -612,6 +612,8 @@ function so_listings_entity_view_mode_alter(&$view_mode, $context) {
 
 function so_listings_process_page(&$vars) {
 
+    $breadcrumb = array();
+
     if(array_key_exists('back', $_GET)) {
 
         global $theme;
@@ -619,12 +621,9 @@ function so_listings_process_page(&$vars) {
         $back_url = drupal_parse_url(urldecode($_GET['back']));
         $back_path = drupal_lookup_path('source', $back_url['path']);
 
-        $breadcrumb = array();
         _so_listings_build_breadcrumb($back_path, $back_url['query'], $breadcrumb);
 
-        $theme_name = $theme . '_breadcrumb_home';
-        $show_breadcrumb_home = theme_get_setting($theme_name);
-        if ($show_breadcrumb_home) {
+        if (!empty($vars['breadcrumb'])) {
         	array_unshift($breadcrumb, "<a href='" . url('<front>') . "'>" . t("Home") . "</a>");
         }
 
@@ -642,6 +641,10 @@ function so_listings_process_page(&$vars) {
         if($nid != null) {
             $breadcrumb = array();
             _so_listings_build_breadcrumb('node/' . $nid, null, $breadcrumb);
+
+            if (!empty($vars['breadcrumb'])) {
+                array_unshift($breadcrumb, "<a href='" . url('<front>') . "'>" . t("Home") . "</a>");
+            }
 
             $vars['breadcrumb'] = theme('breadcrumb', array('breadcrumb' => $breadcrumb));
         }
