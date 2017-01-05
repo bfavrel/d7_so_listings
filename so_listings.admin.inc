@@ -1373,16 +1373,19 @@ function so_listings_params_form_elements(&$form, &$form_state, $listing_definit
             $module_settings = array();
         }
 
-        $module_infos = system_get_info('module', $module);
-
-        $form['modules_settings'][$module] = array(
-            '#type' => 'fieldset',
-            '#title' => t("@module settings", array('@module' => $module_infos['name'])),
-        );
-
         $elements = module_invoke($module, 'so_listings_settings', $module_settings);
 
-        $form['modules_settings'][$module] += (array)$elements;
+        if(!empty($elements)) {
+
+            $module_infos = system_get_info('module', $module);
+
+            $form['modules_settings'][$module] = array(
+                '#type' => 'fieldset',
+                '#title' => t("@module settings", array('@module' => $module_infos['name'])),
+            );
+
+            $form['modules_settings'][$module] += (array)$elements;
+        }
     }
 }
 
