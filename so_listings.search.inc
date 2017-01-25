@@ -192,6 +192,57 @@ function so_listings_so_listings_search($field, &$query, &$data) {
                     }
 
                     break;
+
+                case 'values_ranges':
+
+                    switch($field['values']['type']) {
+
+                        case 'number_max_included':
+                            $query['where'][] = $query_fragment_data->fields['value'] . "<=?";
+                            $query['args'][] = $field['values']['max'];
+                            break;
+
+                        case 'number_max':
+                            $query['where'][] = $query_fragment_data->fields['value'] . "<?";
+                            $query['args'][] = $field['values']['max'];
+                            break;
+
+                        case 'number_min_included':
+                            $query['where'][] = $query_fragment_data->fields['value'] . ">=?";
+                            $query['args'][] = $field['values']['min'];
+                            break;
+
+                        case 'number_min':
+                            $query['where'][] = $query_fragment_data->fields['value'] . ">?";
+                            $query['args'][] = $field['values']['min'];
+                            break;
+
+                        case 'range_upper_included':
+                            $query['where'][] = "(" . $query_fragment_data->fields['value'] . ">? AND " . $query_fragment_data->fields['value'] . "<=?)";
+                            $query['args'][] = $field['values']['min'];
+                            $query['args'][] = $field['values']['max'];
+                            break;
+
+                        case 'range_lower_included':
+                            $query['where'][] = "(" . $query_fragment_data->fields['value'] . ">=? AND " . $query_fragment_data->fields['value'] . "<?)";
+                            $query['args'][] = $field['values']['min'];
+                            $query['args'][] = $field['values']['max'];
+                            break;
+
+                        case 'range_both_included':
+                            $query['where'][] = "(" . $query_fragment_data->fields['value'] . ">=? AND " . $query_fragment_data->fields['value'] . "<=?)";
+                            $query['args'][] = $field['values']['min'];
+                            $query['args'][] = $field['values']['max'];
+                            break;
+
+                        case 'range_none_included':
+                            $query['where'][] = "(" . $query_fragment_data->fields['value'] . ">? AND " . $query_fragment_data->fields['value'] . "<?)";
+                            $query['args'][] = $field['values']['min'];
+                            $query['args'][] = $field['values']['max'];
+                            break;
+                    }
+
+                    break;
             }
 
             break;
