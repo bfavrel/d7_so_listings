@@ -3,5 +3,8 @@ description = "Provides tools to create and display nodes listings. Defines the 
 package = "Saison d'Or"
 core = 7.x
 
+;in order to give access to Field's hooks during install
+files[] = so_listings.field.inc
+
 dependencies[] = so_forms
 dependencies[] = date
