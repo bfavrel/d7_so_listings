@@ -829,10 +829,12 @@ function so_listings_save_listing_definition(&$listing_definition) {
     $definition = (array)$listing_definition;
 
     if(!empty($definition['model'])) {
+
         $existing = (array)so_listings_get_listings_definitions($definition['model']);
         unset($existing['id']);
         unset($definition['params']);
         $definition = array_merge((array)$existing, (array)$definition);
+
     } elseif(array_key_exists('id', $definition) && !empty($definition['id'])) {
 
         $existing = (array)so_listings_get_listings_definitions($definition['id']);
@@ -851,9 +853,13 @@ function so_listings_save_listing_definition(&$listing_definition) {
         }
     }
 
-    $tags_hash = md5($definition['tags']);
-    $tags_have_changed = ($tags_hash != $definition['cache']['tags_hash']);
-    $definition['cache']['tags_hash'] = $tags_hash;
+    if(array_key_exists('tags', $definition)) {
+        $tags_hash = md5($definition['tags']);
+        $tags_have_changed = ($tags_hash != $definition['cache']['tags_hash']);
+        $definition['cache']['tags_hash'] = $tags_hash;
+    } else {
+        $tags_have_changed = false;
+    }
 
     $record = array(
         'id' => $definition['id'],
@@ -2078,6 +2084,12 @@ function node_so_listings_sorting() {
         'node_title_desc' => array(
             'label' => t("Title by descending alphabetical order"),
             'clause' => "n.title ASC",
+            'join' => null,
+            'contexts' => array(),
+        ),
+        'node_created_desc' => array(
+            'label' => t("Most recent nodes first"),
+            'clause' => "n.created DESC",
             'join' => null,
             'contexts' => array(),
         ),
