@@ -2448,7 +2448,7 @@ function node_so_listings_search($field, &$query, &$data) {
 }
 
 function so_listings_cron() {
-    db_query("TRUNCATE TABLE {so_listings_map}");
+    db_query("DELETE FROM {so_listings_map} WHERE 1");
 
     $definitions = so_listings_get_listings_definitions();
 
