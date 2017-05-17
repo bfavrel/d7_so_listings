@@ -1412,6 +1412,12 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
 
     $preset_options = so_listings_get_presets($preset)->params;
 
+    if($preset_options['search'] == true && array_key_exists('search_mandatory', $preset_options) && $preset_options['search_mandatory'] == true) {
+        if(so_forms_check_user_inputs('so_listings', $lid . '@search') != true) {
+            $options['so_listings']['listing'] = false;
+        }
+    }
+
     //Si le listing utilise AJAX ainsi que la pagination et que les options initiales et/ou la requête
     //ne sont pas vide, cela signifie que nous sommes en présence d'un listing généré en code. Par conséquent
     //les éléments doivent être mis en cache, car ces paramètres ne seront plus repassés.

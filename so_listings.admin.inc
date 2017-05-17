@@ -751,6 +751,17 @@ function so_listings_edit_preset_form($form, &$form_state, $id) {
                 '#default_value' => $preset->params['search'],
             ),
 
+            'search_mandatory' => array(
+                '#type' => 'checkbox',
+                '#title' => t("If no search was submitted, listings doesn't display results"),
+                '#default_value' => $preset->params['search_mandatory'],
+                '#states' => array(
+                    'visible' => array(
+                        ':input[name="params[search]"]' => array('checked' => true),
+                    ),
+                ),
+            ),
+
             'sorting' => array(
                 '#type' => 'checkbox',
                 '#title' => t("Listing use sorting"),
