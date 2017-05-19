@@ -797,6 +797,26 @@ function so_listings_get_listings_definitions($id = null, $tags = false) {
 }
 
 /**
+ * Get an array of listing IDs filtered by one tag.
+ *
+ * @param string $tag
+ *
+ * @return array
+ */
+function so_listings_get_lids_by_tag($tag) {
+
+    $results = db_query("SELECT DISTINCT lid FROM {so_listings_tags} WHERE tag=?", array($tag));
+
+    $lids = array();
+
+    while($lid = $results->fetchColumn()) {
+        $lids[] = $lid;
+    }
+
+    return $lids;
+}
+
+/**
  * List of compilation contexts
  *
  * @param boolean $filtered : if set to 'true', only active contexts will be returned.
@@ -925,7 +945,7 @@ function so_listings_save_tags($lid, $tags) {
 }
 
 /**
- * Retrieve the tags of a listing matchin the given id.
+ * Retrieve the tags of a listing matching the given id.
  *
  * @param int $lid
  * @param boolean $as_array : if set to 'true' (default), terms are provided as a Drupal valid tags string.
@@ -1412,9 +1432,11 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
 
     $preset_options = so_listings_get_presets($preset)->params;
 
+    $prevent_display_results = false;
+
     if($preset_options['search'] == true && array_key_exists('search_mandatory', $preset_options) && $preset_options['search_mandatory'] == true) {
         if(so_forms_check_user_inputs('so_listings', $lid . '@search') != true) {
-            $options['so_listings']['listing'] = false;
+            $prevent_display_results = true;
         }
     }
 
@@ -1474,7 +1496,7 @@ function so_listings_listing($lid, $preset = 'default', &$options = array(), &$q
         $options['count_method'] = 'query';
     }
 
-    if($options['so_listings']['listing'] == true) {
+    if($options['so_listings']['listing'] == true && $prevent_display_results == false) {
         $listing = so_listings_compile($lid, $options, $query);
 
         if ($options['so_listings']['pager'] == true) {
