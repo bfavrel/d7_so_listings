@@ -1098,6 +1098,9 @@ function so_listings_delete_confirm_submit($form, &$form_state) {
     $req = "DELETE FROM {so_listings} WHERE id=?";
     db_query($req, array($definition->id));
 
+    $req = "DELETE FROM {so_listings_tags} WHERE lid=?";
+    db_query($req, array($definition->id));
+
     drupal_set_message(t("Listing '@listing' has been deleted", array('@listing' => $definition->name)), 'status');
     drupal_goto();
 }
