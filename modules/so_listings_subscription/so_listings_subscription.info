@@ -1,0 +1,7 @@
+name = "SO Listings Subscription"
+description = "Make users subscribe to listing's searches and receive new results by mail."
+package = "Saison d'Or"
+core = 7.x
+
+dependencies[] = so_listings
+dependencies[] = i18n_string

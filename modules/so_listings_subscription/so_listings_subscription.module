@@ -1,0 +1,450 @@
+<?php
+
+//so_listings_subscription
+
+function so_listings_subscription_permission() {
+    return array(
+        'configure so listings subscription' => array(
+            'title' => t("Configure module"),
+            'description' => t("Edit module's settings."),
+        ),
+    );
+}
+
+function so_listings_subscription_menu() {
+
+    $items = array();
+
+    //--- settings
+    $items['admin/config/so_listings/settings/subscription'] = array(
+        'title' => "Subscription",
+        'type' => MENU_LOCAL_TASK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_subscription_settings_form'),
+        'file' => 'so_listings_subscription.admin.inc',
+        'access arguments' => array('configure so listings subscription'),
+        'weight' => 4,
+    );
+
+    //--- management page
+    $items['so_listings/subscription/%'] = array( // $secured_id
+        'title' => "Manage subscriptions",
+        'type' => MENU_CALLBACK,
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('so_listings_subscriptions_manage_form', 2),
+        'access arguments' => array('access content'),
+    );
+
+    return $items;
+}
+
+function so_listings_subscription_so_listings_settings($values = array('allow_subscription' => false)) {
+
+    return array(
+        'allow_subscription' => array(
+            '#type' => 'checkbox',
+            '#title' => t("Allow users to subscribe to search results"),
+            '#default_value' => $values['allow_subscription'],
+        ),
+    );
+}
+
+function so_listings_subscriptions_manage_form($form, &$form_state, $secured_id) {
+
+    $settings = variable_get('so_listings_subscription', array());
+
+    $email = db_query("SELECT email FROM {so_listings_subscriptions} WHERE secured_id=?", array($secured_id))->fetchColumn();
+
+    $results = db_query("SELECT * FROM {so_listings_subscriptions} WHERE email=? ORDER BY created ASC", array($email));
+
+    $options = array();
+
+    while($row = $results->fetchObject()) {
+
+        $date = DateTime::createFromFormat('U', $row->created)->setTimezone(new DateTimeZone('Europe/Paris'))->format('d/m/Y H\hi');
+        $options[$row->secured_id] = "<span class='date'>" . $date . "</span>" . "<span class='title'>" . $row->label . "</span>";
+    }
+
+    if(empty($options)) {
+        return array(
+            'go_gome' => array(
+                '#markup' => "<a class='home-link' href='/" . variable_get('site_frontpage', 'node') . "'>" . t("Go back to home page") . "</a>",
+            ),
+        );
+    }
+
+    $form = array(
+
+        'header_message' => array(
+            '#markup' => i18n_string('module:so_listings_subscription:field_label', $settings['strings']['manage_head']),
+            '#prefix' => '<div class="manage-header">',
+            '#suffix' => "</div>",
+        ),
+
+        'subscriptions' => array(
+            '#type' => 'checkboxes',
+            '#title' => null,
+            '#options' => $options,
+        ),
+
+        'submit' => array(
+            '#type' => 'submit',
+            '#value' => i18n_string('module:so_listings_subscription:field_label', $settings['strings']['unsubscribe_button_label']),
+        ),
+    );
+
+    return $form;
+}
+
+function so_listings_subscriptions_manage_form_submit($form, &$form_state) {
+
+    $settings = variable_get('so_listings_subscription', array());
+
+    $ids = array_filter($form_state['values']['subscriptions']);
+
+    foreach($ids as $id) {
+        db_query("DELETE FROM {so_listings_subscriptions} WHERE secured_id=?", array($id));
+    }
+
+    drupal_set_message(i18n_string('module:so_listings_subscription:field_label', $settings['strings']['unsubscribe_confirmation']));
+}
+
+/*
+ * hook_so_listings_build
+ */
+function so_listings_subscription_so_listings_build(&$build, $nodes_fields, $data) {
+
+    if(!is_array($data) || !array_key_exists('allow_subscription', $data) || $data['allow_subscription'] == false) {
+        return;
+    }
+
+    // we activate the module only in case of search, in order to limit number of results in mails.
+    if($build['search_form']['#form_is_populated'] == false && $build['search_form']['#advanced_form_is_populated'] == false) {
+        return;
+    }
+
+    $lid = $build['listing_infos']['#value']['lid'];
+    $form_title = $build['search_form']['#public_infos']['title'];
+
+    $form_id = $build['search_form']['#public_infos']['secured_sfid'];
+    $user_inputs = (array)so_forms_get_user_inputs(null, $form_id);
+
+    // we activate the module only in case of search, in order to limit number of results in mails.
+    if(empty($user_inputs)) {
+        return;
+    }
+
+    $build['subscription_form'] = drupal_get_form('so_listings_subscription_form', array(
+        'settings' => variable_get('so_listings_subscription', array()),
+        'listing' => array(
+            'lid' => $build['listing_infos']['#value']['lid'],
+            'query_string' => $build['listing_infos']['#value']['compilation']['query_string'],
+            'args' => $build['listing_infos']['#value']['compilation']['args'],
+            'listing_nid' => $build['listing_infos']['#value']['nid'],
+        ),
+        'form' => array(
+            'sfid' => $form_id,
+            'form_title' => $build['search_form']['#public_infos']['title'],
+            'sfkey' => $build['search_form']['#sfkey'],
+            'user_inputs' => $user_inputs,
+        ),
+    ));
+}
+
+function so_listings_subscription_form($form, &$form_state, $search_data = array()) {
+
+    $settings = variable_get('so_listings_subscription', array());
+
+    $form = array(
+        '#tree' => true,
+
+        'email' => array(
+            '#type' => 'textfield',
+            '#attributes' => array('placeholder' => i18n_string('module:so_listings_subscription:field_label', $settings['strings']['field_label'])),
+            '#required' => true,
+        ),
+
+        'listing_data' => array(
+            '#type' => 'value',
+            '#value' => $search_data,
+        ),
+
+        'submit' => array(
+            '#type' => 'submit',
+            '#value' => i18n_string('module:so_listings_subscription:button_label', $settings['strings']['button_label']),
+            '#ajax' => array(
+                'callback' => 'so_listings_subscription_form_callback',
+                'wrapper' => 'so-listings-subscription-form',
+                'effect' => 'fade',
+                'method' => 'replace',
+            ),
+        ),
+    );
+
+    return $form;
+}
+
+function so_listings_subscription_form_callback($form, &$form_state) {
+
+    if(!array_key_exists('secured_id', $form_state)) {
+        return $form;
+    }
+
+    $settings = variable_get('so_listings_subscription', array());
+
+    return array(
+        'success_msg' => array(
+            '#markup' => i18n_string('module:so_listings_subscription:success', $settings['strings']['success']),
+            '#prefix' => '<div class="message success">',
+            '#suffix' => "</div>",
+        ),
+
+        'manage_link' => array(
+            '#markup' => i18n_string('module:so_listings_subscription:manage_link', $settings['strings']['manage_link']),
+            '#prefix' => '<a href="/so_listings/subscription/' . $form_state['secured_id'] . '" class="manage-link" target="_blank">',
+            '#suffix' => "</a>",
+        ),
+    );
+}
+
+function so_listings_subscription_form_submit($form, &$form_state) {
+
+    if(empty($form_state['values']['email'])) {
+        return;
+    }
+
+    $search_data = $form_state['values']['listing_data'];
+
+    $query_hash = md5($search_data['listing']['query_string'] . serialize($search_data['listing']['args']));
+
+    $secured_id_exists = db_query("SELECT secured_id FROM {so_listings_subscriptions} WHERE email=? AND query_hash=?", array(
+        $form_state['values']['email'],
+        $query_hash,
+    ))->fetchColumn();
+
+    if(!empty($secured_id_exists)) {
+        $form_state['secured_id'] = $secured_id_exists;
+        return;
+    }
+
+    $labels = module_invoke_all('so_listings_subscription_label', $search_data);
+
+    if(!empty($labels)) {
+        $label = array_pop($labels);
+    } else {
+        $label = $search_data['form']['form_title'];
+    }
+
+    $results = db_query($search_data['listing']['query_string'], $search_data['listing']['args']);
+
+    $max_nid = 0;
+    $nids = array();
+
+    while($row = $results->fetchObject()) {
+        $max_nid = max($max_nid, $row->nid);
+        $nids[] = $row->nid;
+    }
+
+    $secured_id = uniqid();
+
+    $record = array(
+        'secured_id' => $secured_id,
+        'email' => $form_state['values']['email'],
+        'label' => $label,
+        'max_nid' => $max_nid,
+        'query_string' => $search_data['listing']['query_string'],
+        'query_args' => $search_data['listing']['args'],
+        'query_hash' => $query_hash,
+        'nids' => $nids,
+        'listing_params' => array(
+            'nid' => $search_data['listing']['listing_nid'],
+            'sfkey' => $search_data['form']['sfkey'],
+        ),
+        'created' => time(),
+    );
+
+    drupal_write_record('so_listings_subscriptions', $record);
+
+    $form_state['secured_id'] = $secured_id;
+}
+
+function so_listings_subscription_cron($forced = false) {
+
+    $config = variable_get('so_listings_subscription', array());
+
+    if(empty($config) || ($config['cron']['active'] != true && $forced == false)) {return;}
+
+    $last_execution_time = variable_get('so_listings_subscription_last_cron', 0);
+
+    if($forced == false && !empty($last_execution_time)) {
+
+        $launch = false;
+
+        $time_windows = explode('|', $config['cron']['time_windows']);
+        array_walk($time_windows, function(&$val){
+            $val = explode('-', $val);
+        });
+
+        $last_execution = DateTime::createFromFormat('U', $last_execution_time);
+        $last_execution->setTimezone(new DateTimeZone('Europe/Paris'));
+        $last_execution_hour = $last_execution->format('G');
+        $last_execution_day = $last_execution->format('j');
+
+        $now = DateTime::createFromFormat('U', time());
+        $now->setTimezone(new DateTimeZone('Europe/Paris'));
+        $hour = $now->format('G');
+        $day = $now->format('j');
+
+        foreach($time_windows as $window) {
+
+            // on est actuellement dans une tranche programmée
+            if($hour >= $window[0] && $hour < $window[1]) {
+
+                // la dernière mise à jour a été faite aujourd'hui
+                if($last_execution_day == $day) {
+
+                    // elle a déjà eu lieu pour cette tranche horaire
+                    if($last_execution_hour >= $window[0]) {
+                        break;
+                    } else {
+                        $launch = true;
+                        break;
+                    }
+
+                // la dernière mise à jour ne date pas d'aujourd'hui
+                } else {
+                    $launch = true;
+                    break;
+                }
+            }
+        }
+
+        if($launch == false) {return;}
+    }
+
+    watchdog('so_listings_subscription', "Cron starts", array(), WATCHDOG_INFO);
+
+    $subscriptions_results = db_query("SELECT * FROM {so_listings_subscriptions} WHERE send=0");
+
+    while($subscription_row = $subscriptions_results->fetchObject()) {
+
+        $subscription_row->query_args = unserialize($subscription_row->query_args);
+        $subscription_row->nids = unserialize($subscription_row->nids);
+        $subscription_row->listing_params = unserialize($subscription_row->listing_params);
+
+        $results = db_query($subscription_row->query_string, $subscription_row->query_args);
+
+        $nids = array();
+        $old_max_nid = $subscription_row->max_nid;
+        $new_max_nid = 0;
+
+        while($row = $results->fetchObject()) {
+            $new_max_nid = max($new_max_nid, $row->nid);
+
+            if($row->nid > $old_max_nid) {
+                $nids[] = $row->nid;
+            }
+        }
+
+        db_query("UPDATE {so_listings_subscriptions} SET max_nid=:maxnid, nids=:nids, updated=:updated, send=1 WHERE query_hash=:hash AND max_nid<:maxnid", array(
+            ':maxnid' => $new_max_nid,
+            ':nids' => serialize($nids),
+            ':updated' => time(),
+            ':hash' => $subscription_row->query_hash
+        ));
+    }
+
+    $emails_results = db_query("SELECT DISTINCT email FROM {so_listings_subscriptions} WHERE send=1");
+
+    while($email = $emails_results->fetchColumn()) {
+
+        $subscriptions_results = db_query("SELECT * FROM {so_listings_subscriptions} WHERE email=? AND send=1", array($email));
+
+        $mail_subscriptions = array();
+
+        $secured_id = "";
+
+        while($subscription_row = $subscriptions_results->fetchObject()) {
+
+            $secured_id = $subscription_row->secured_id;
+
+            $subscription_row->nids = unserialize($subscription_row->nids);
+            $subscription_row->listing_params = unserialize($subscription_row->listing_params);
+
+            if(array_key_exists('sfkey', $subscription_row->listing_params) && !empty($subscription_row->listing_params['sfkey'])) {
+                $listing_href = url('node/' . $subscription_row->listing_params['nid'], array('absolute' => true, 'query' => array('sfkey' => $subscription_row->listing_params['sfkey'])));
+            } else {
+                $listing_href = url('node/' . $subscription_row->listing_params['nid'], array('absolute' => true));
+            }
+
+            $mail_subscriptions[] = theme('so_listings_subscription_mail_subscription', array(
+                'label' => $subscription_row->label,
+                'nids' => $subscription_row->nids,
+                'listing_href' => $listing_href,
+            ));
+        }
+
+        $mail_body = theme('so_listings_subscription_mail', array(
+            'subscriptions' => $mail_subscriptions,
+            'management_href' => url('so_listings/subscription/' . $secured_id, array('absolute' => true)),
+        ));
+
+        $from = variable_get('site_mail', 'contact@' . $_SERVER['SERVER_NAME']);
+        $to = $email;
+        $params = array(
+            'body' => $mail_body,
+        );
+
+        drupal_mail(
+            'so_listings_subscription',
+            'cron_mail',
+            $to,
+            language_default(),
+            $params,
+            $from,
+            true
+        );
+    }
+
+    db_query("UPDATE {so_listings_subscriptions} SET send=0");
+
+    watchdog('so_listings_subscription', "Cron ends", array(), WATCHDOG_INFO);
+
+    variable_set('so_listings_subscription_last_cron', time());
+}
+
+/*
+ * hook_mail()
+ */
+function so_listings_subscription_mail($key, &$message, $params) {
+
+    $settings = variable_get('so_listings_subscription', array());
+
+    $message['subject'] = i18n_string('module:so_listings_subscription:mail_subject', $settings['strings']['mail_subject']);
+    $message['body'][] = $params['body'];
+}
+
+function so_listings_subscription_theme() {
+
+    $path = drupal_get_path('module', 'so_listings_subscription') . '/theme';
+
+    return array(
+        'so_listings_subscription_mail' => array(
+            'template' => 'so_listings_subscription_mail',
+            'variables' => array(
+                'subscriptions' => array(),
+                'management_href' => "",
+            ),
+            'path' => $path,
+        ),
+        'so_listings_subscription_mail_subscription' => array(
+            'template' => 'so_listings_subscription_mail_subscription',
+            'variables' => array(
+                'label' => "",
+                'nids' => array(),
+                'listing_href' => "",
+            ),
+            'path' => $path,
+        ),
+    );
+}

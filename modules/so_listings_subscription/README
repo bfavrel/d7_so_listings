@@ -1,0 +1,3 @@
+In order to make functionning backlinks to listings, SO Forms must have their parameters to store data in session AND in database (url '&sfkey')
+
+In so_listings templates the build array had a new entry ("$element['subscription_form']"). This entry has module settings : "$element['subscription_form']['listing_data']['#value']['settings']"

@@ -1,0 +1,112 @@
+<?php
+
+function so_listings_subscription_schema() {
+
+    $schema = array();
+
+    $schema['so_listings_subscriptions'] = array(
+
+        'description' => "Store listings subscription",
+
+        'fields' => array(
+            'id' => array(
+                'type' => 'serial',
+                'not null' => true,
+                'unsigned' => true,
+                'description' => "Primary key.",
+            ),
+
+            'secured_id' => array(
+                'type' => 'varchar',
+                'length' => '255',
+                'not null' => true,
+                'description' => "Unique hash",
+            ),
+
+            'email' => array(
+                'type' => 'varchar',
+                'length' => '255',
+                'not null' => true,
+            ),
+
+            'label' => array(
+                'type' => 'varchar',
+                'length' => '255',
+                'not null' => true,
+            ),
+
+            'query_string' => array(
+                'type' => 'text',
+                'not null' => true,
+            ),
+
+            'query_args' => array(
+                'type' => 'text',
+                'not null' => true,
+                'serialize' => true,
+            ),
+
+            'query_hash' => array(
+                'type' => 'varchar',
+                'length' => '255',
+                'not null' => true,
+                'description' => "MD5 of query string.",
+            ),
+
+            'max_nid' => array(
+                'type' => 'int',
+                'not null' => true,
+                'unsigned' => true,
+                'description' => "Greatest nid value in nids list.",
+            ),
+
+            'nids' => array(
+                'type' => 'text',
+                'not null' => true,
+                'serialize' => true,
+                'description' => "Nids serialized array",
+            ),
+
+            'listing_params' => array(
+                'type' => 'text',
+                'not null' => true,
+                'serialize' => true,
+                'description' => "Listing various params serialized array",
+            ),
+
+            'created' => array(
+                'type' => 'int',
+                'not null' => true,
+                'default' => 0,
+                'description' => "Unix timestamp of when user has subscribed.",
+            ),
+
+            'updated' => array(
+                'type' => 'int',
+                'not null' => true,
+                'default' => 0,
+                'description' => "Unix timestamp of last time query has been executed.",
+            ),
+
+            'send' => array(
+                'type' => 'int',
+                'size' => 'tiny',
+                'default' => 0,
+                'description' => "Flag is set when infos need to be sent to user",
+            ),
+        ),
+
+        'primary key' => array('id'),
+
+        'unique keys' => array(
+            'secured_id_index' => array('secured_id'),
+        ),
+
+        'indexes' => array(
+            'emails_index' => array('email'),
+            'query_hash_index' => array('query_hash'),
+        ),
+    );
+
+    return $schema;
+}
