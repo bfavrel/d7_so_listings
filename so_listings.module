@@ -1965,6 +1965,8 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
 
     //--- COUNT QUERY
 
+    $count_query_string = "";
+
     if ($options['count'] == true && $options['count_method'] == 'query') {
 
         // on ne compte que les nids, et on n'a pas besoin d'extraire les autres champs, ou de procéder au tri.
@@ -2029,6 +2031,14 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
     }
 
     $results = db_query_range($query_string, $options['limit_from'], $options['limit_num'], $args);
+
+    $listing['infos']['compilation'] = array(
+        'query_string' => $query_string,
+        'count_query_string' => $count_query_string,
+        'args' => $args,
+        'limit_from' => $options['limit_from'],
+        'limit_num' => $options['limit_num'],
+    );
 
     while ($row = $results->fetchObject()) {
         $listing['nodes'][$row->nid] = array_merge_recursive((array) $listing['nodes'][$row->nid], array_diff_key((array) $row, $nid_fields_filtering));
