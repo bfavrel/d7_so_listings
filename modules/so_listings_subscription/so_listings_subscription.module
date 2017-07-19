@@ -118,10 +118,7 @@ function so_listings_subscription_so_listings_build(&$build, $nodes_fields, $dat
         return;
     }
 
-    // we activate the module only in case of search, in order to limit number of results in mails.
-    if($build['search_form']['#form_is_populated'] == false && $build['search_form']['#advanced_form_is_populated'] == false) {
-        return;
-    }
+    $settings = variable_get('so_listings_subscription', array());
 
     $lid = $build['listing_infos']['#value']['lid'];
     $form_title = $build['search_form']['#public_infos']['title'];
@@ -129,9 +126,11 @@ function so_listings_subscription_so_listings_build(&$build, $nodes_fields, $dat
     $form_id = $build['search_form']['#public_infos']['secured_sfid'];
     $user_inputs = (array)so_forms_get_user_inputs(null, $form_id);
 
-    // we activate the module only in case of search, in order to limit number of results in mails.
-    if(empty($user_inputs)) {
-        return;
+    if($settings['config']['activate_on_search'] == true) {
+        // we activate the module only in case of search, in order to limit number of results in mails.
+        if(empty($user_inputs)) {
+            return;
+        }
     }
 
     $build['subscription_form'] = drupal_get_form('so_listings_subscription_form', array(

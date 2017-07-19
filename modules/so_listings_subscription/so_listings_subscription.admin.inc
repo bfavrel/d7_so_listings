@@ -11,8 +11,14 @@ function so_listings_subscription_settings_form($form, &$form_state) {
             'config' => array(
                 '#type' => 'fieldset',
                 '#collapsible' => true,
-                '#collapsed' => false,
+                '#collapsed' => true,
                 '#title' => t("Configuration"),
+
+                'activate_on_search' => array(
+                    '#type' => 'checkbox',
+                    '#title' => t("Activate subscription form only if a search has been made"),
+                    '#default_value' => array_key_exists('config', $settings) ? $settings['config']['activate_on_search'] : false,
+                ),
             ),
 
             'cron' => array(
@@ -40,7 +46,7 @@ function so_listings_subscription_settings_form($form, &$form_state) {
             'strings' => array(
                 '#type' => 'fieldset',
                 '#collapsible' => true,
-                '#collapsed' => false,//\\
+                '#collapsed' => true,
                 '#title' => t("Strings"),
                 '#description' => t("In default language"),
 
