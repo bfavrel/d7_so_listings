@@ -33,6 +33,43 @@ function so_listings_subscription_settings_form($form, &$form_state) {
                     '#default_value' => $settings['cron']['active'],
                 ),
 
+                'periodicity' => array(
+                    '#type' => 'select',
+                    '#title' => t("Periodicity"),
+                    '#options' => array(
+                        'hourly' => t("Hourly@sols", array('@sols' => null)),
+                        'daily' => t("Daily@sols", array('@sols' => null)),
+                        'weekly' => t("Weekly@sols", array('@sols' => null)),
+                        'monthly' => t("Monthly@sols", array('@sols' => null)),
+                    ),
+                    '#default_value' => array_key_exists('cron', $settings) ? $settings['cron']['periodicity'] : 'daily',
+                ),
+
+                'monthly' => array(
+                    '#type' => 'textfield',
+                    '#title' => t("Day of month for monthly cron"),
+                    '#default_value' => array_key_exists('cron', $settings) ? $settings['cron']['monthly'] : 1,
+                    '#size' => 2,
+                    '#states' => array(
+                        'visible' => array(
+                            '#edit-settings-cron-periodicity' => array('value' => 'monthly'),
+                        ),
+                    ),
+                ),
+
+                'weekly' => array(
+                    '#type' => 'textfield',
+                    '#title' => t("Day of week for weekly cron"),
+                    '#description' => t("From 1 (monday) to 7 (sunday)"),
+                    '#default_value' => array_key_exists('cron', $settings) ? $settings['cron']['weekly'] : 7,
+                    '#size' => 2,
+                    '#states' => array(
+                        'visible' => array(
+                            '#edit-settings-cron-periodicity' => array('value' => 'weekly'),
+                        ),
+                    ),
+                ),
+
                 'time_windows' => array(
                     '#type' => 'textfield',
                     '#title' => t("Time window(s) for cron"),
@@ -40,6 +77,11 @@ function so_listings_subscription_settings_form($form, &$form_state) {
                     '#default_value' => array_key_exists('cron', $settings) ? $settings['cron']['time_windows'] : '0-6',
                     '#size' => 25,
                     '#required' => true,
+                    '#states' => array(
+                        'invisible' => array(
+                            '#edit-settings-cron-periodicity' => array('value' => 'hourly'),
+                        ),
+                    ),
                 ),
             ),
 

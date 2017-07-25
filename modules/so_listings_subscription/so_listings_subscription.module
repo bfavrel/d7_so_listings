@@ -269,56 +269,96 @@ function so_listings_subscription_form_submit($form, &$form_state) {
 
 function so_listings_subscription_cron($forced = false) {
 
-    $config = variable_get('so_listings_subscription', array());
+    $settings = variable_get('so_listings_subscription', array());
 
-    if(empty($config) || ($config['cron']['active'] != true && $forced == false)) {return;}
+    if(empty($settings) || ($forced == false && $settings['cron']['active'] != true)) {return;}
 
-    $last_execution_time = variable_get('so_listings_subscription_last_cron', 0);
+    $last_execution = variable_get('so_listings_subscription_last_cron', array('monthly' => 0, 'weekly' => 0, 'daily' => 0, 'hourly' => 0));
 
-    if($forced == false && !empty($last_execution_time)) {
+    if($forced == false) {
 
         $launch = false;
 
-        $time_windows = explode('|', $config['cron']['time_windows']);
-        array_walk($time_windows, function(&$val){
-            $val = explode('-', $val);
-        });
-
-        $last_execution = DateTime::createFromFormat('U', $last_execution_time);
-        $last_execution->setTimezone(new DateTimeZone('Europe/Paris'));
-        $last_execution_hour = $last_execution->format('G');
-        $last_execution_day = $last_execution->format('j');
+        $time_window = explode('-', $settings['cron']['time_windows']);
 
         $now = DateTime::createFromFormat('U', time());
         $now->setTimezone(new DateTimeZone('Europe/Paris'));
+
         $hour = $now->format('G');
-        $day = $now->format('j');
+        $date = $now->format('j');
 
-        foreach($time_windows as $window) {
+        if($settings['cron']['periodicity'] == 'monthly' && ($date == $settings['cron']['monthly'] || $last_execution['monthly'] == 0)
+            && ($hour >= $time_window[0] && $hour < $time_window[1])) {
 
-            // on est actuellement dans une tranche programmée
-            if($hour >= $window[0] && $hour < $window[1]) {
+            $monthly_previous = DateTime::createFromFormat('U', $last_execution['monthly']);
+            $monthly_diff = $now->diff($monthly_previous, true);
 
-                // la dernière mise à jour a été faite aujourd'hui
-                if($last_execution_day == $day) {
+            if($monthly_diff->m >= 1) {
+                $launch = true;
 
-                    // elle a déjà eu lieu pour cette tranche horaire
-                    if($last_execution_hour >= $window[0]) {
-                        break;
-                    } else {
-                        $launch = true;
-                        break;
-                    }
-
-                // la dernière mise à jour ne date pas d'aujourd'hui
+                if($last_execution['monthly'] == 0) {
+                    $last_execution['monthly'] = 1;
                 } else {
-                    $launch = true;
-                    break;
+                    $rounded_time = DateTime::createFromFormat('d/m/Y H:i:s', $now->format('d/m/Y 00:00:00'));
+                    $last_execution['monthly'] = $rounded_time->format('U');
                 }
             }
         }
 
-        if($launch == false) {return;}
+        $day = $now->format('N');
+
+        if($settings['cron']['periodicity'] == 'weekly' && ($day == $settings['cron']['weekly'] || $last_execution['weekly'] == 0)
+                && ($hour >= $time_window[0] && $hour < $time_window[1])) {
+
+            $weekly_previous = DateTime::createFromFormat('U', $last_execution['weekly']);
+            $weekly_diff = $now->diff($weekly_previous, true);
+
+            if($weekly_diff->d >= 7) {
+                $launch = true;
+
+                if($last_execution['weekly'] == 0) {
+                    $last_execution['weekly'] = 1;
+                } else {
+                    $rounded_time = DateTime::createFromFormat('d/m/Y H:i:s', $now->format('d/m/Y 00:00:00'));
+                    $last_execution['weekly'] = $rounded_time->format('U');
+                }
+            }
+        }
+
+        if($settings['cron']['periodicity'] == 'daily' && (($hour >= $time_window[0] && $hour < $time_window[1]) || $last_execution['daily'] == 0)) {
+
+            $daily_previous = DateTime::createFromFormat('U', $last_execution['daily']);
+            $daily_diff = $now->diff($daily_previous, true);
+
+            if($daily_diff->d >= 1) {
+                $launch = true;
+
+                if($last_execution['daily'] == 0) {
+                    $last_execution['daily'] = 1;
+                } else {
+                    $rounded_time = DateTime::createFromFormat('d/m/Y H:i:s', $now->format('d/m/Y 00:00:00'));
+                    $last_execution['daily'] = $rounded_time->format('U');
+                }
+            }
+        }
+
+        $hourly_previous = DateTime::createFromFormat('U', $last_execution['hourly']);
+        $hourly_diff = $now->diff($hourly_previous, true);
+
+        if($settings['cron']['periodicity'] == 'hourly' && ($hourly_diff->h >= 1 || $last_execution['hourly'] == 0)) {
+            $launch = true;
+
+            if($last_execution['hourly'] == 0) {
+                $last_execution['hourly'] = 1;
+            } else {
+                $rounded_time = DateTime::createFromFormat('d/m/Y H:i:s', $now->format('d/m/Y H:00:00'));
+                $last_execution['hourly'] = $rounded_time->format('U');
+            }
+        }
+
+        if($launch == false) {
+
+            return;}
     }
 
     watchdog('so_listings_subscription', "Cron starts", array(), WATCHDOG_INFO);
@@ -409,7 +449,7 @@ function so_listings_subscription_cron($forced = false) {
 
     watchdog('so_listings_subscription', "Cron ends", array(), WATCHDOG_INFO);
 
-    variable_set('so_listings_subscription_last_cron', time());
+    variable_set('so_listings_subscription_last_cron', $last_execution);
 }
 
 /*
