@@ -2030,6 +2030,11 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
         drupal_set_message("<strong>DEBUG - SOL query : " . $definition->name . "</strong> - " . $options['debug_infos'] . "<br />" . $formated_dump . $link);
     }
 
+    // lors d'une recherche, le nombre de pages est susceptible de changer. On peut alors se retrouver "hors page max".
+    if($options['limit_from'] >= $listing['infos']['count']) {
+        $options['limit_from'] = 0;
+    }
+
     $results = db_query_range($query_string, $options['limit_from'], $options['limit_num'], $args);
 
     $listing['infos']['compilation'] = array(
