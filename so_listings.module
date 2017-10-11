@@ -2031,8 +2031,10 @@ function so_listings_compile($lid, &$options = array(), &$query = array()) {
     }
 
     // lors d'une recherche, le nombre de pages est susceptible de changer. On peut alors se retrouver "hors page max".
-    if($options['limit_from'] >= $listing['infos']['count']) {
-        $options['limit_from'] = 0;
+    if ($options['count'] == true && $options['count_method'] == 'query') {
+        if($options['limit_from'] >= $listing['infos']['count']) {
+            $options['limit_from'] = 0;
+        }
     }
 
     $results = db_query_range($query_string, $options['limit_from'], $options['limit_num'], $args);
