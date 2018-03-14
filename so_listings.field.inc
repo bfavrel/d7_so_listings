@@ -93,6 +93,7 @@ function so_listings_field_widget_form(&$form, &$form_state, $field, $instance, 
 
         if(!empty($instance['settings']['tags'])) {
             $tags = explode(',', $instance['settings']['tags']);
+            $tags = array_map('trim', $tags);
         } else {
             $tags = '';
         }
