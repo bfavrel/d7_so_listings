@@ -131,6 +131,8 @@ function so_listings_field_widget_form(&$form, &$form_state, $field, $instance, 
                 '#default_value' => $items[$delta]['lid'],
             ),
 
+            'admin_link' => array(),
+
             'presets_table' => array(
                 '#type' => 'container',
 
@@ -184,6 +186,12 @@ function so_listings_field_widget_form(&$form, &$form_state, $field, $instance, 
             $element['presets_table']['weight'][$preset] = array(
                 '#type' => 'value',
                 '#value' => 0,
+            );
+        }
+
+        if(user_access('administer so_listings advanced') && !empty($items[$delta])) {
+            $element['admin_link'] = array(
+                '#markup' => l(t("Edit listing"), '/admin/structure/so_listings/edit/' . $items[$delta]['lid'], array('attributes' => array('target' => '_blank'))),
             );
         }
 
